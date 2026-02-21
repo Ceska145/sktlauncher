@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Kurulum - Canlı Rehber</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: #718096;
+            margin-bottom: 30px;
+        }
+
+        .hero-button {
+            display: inline-block;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+        }
+
+        .hero-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .step-title {
+            font-size: 24px;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .step-description {
+            color: #4a5568;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .step-action {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #48bb78;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .step-action:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .checklist {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #4a5568;
+        }
+
+        .checklist li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .warning-box {
+            background: #fef5e7;
+            border-left: 5px solid #f39c12;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .warning-box strong {
+            color: #d68910;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 5px solid #48bb78;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border-left: 5px solid #4299e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .code-box {
+            background: #2d3748;
+            color: #68d391;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .screenshot-placeholder {
+            background: #f7fafc;
+            border: 3px dashed #cbd5e0;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .screenshot-placeholder .icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+
+        .progress-tracker {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .credentials {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid #e2e8f0;
+        }
+
+        .credentials .item {
+            margin: 10px 0;
+        }
+
+        .credentials .label {
+            font-weight: 600;
+            color: #2d3748;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .credentials .value {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            border: 1px solid #e2e8f0;
+            word-break: break-all;
+        }
+
+        .final-section {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .final-section h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .final-section p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .final-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .final-button {
+            padding: 15px 40px;
+            background: white;
+            color: #38a169;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .final-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>🔥 Firebase Kurulumu</h1>
+            <p>3-5 dakikada Firebase Firestore Database'i aktifleştirin</p>
+            <a href="https://console.firebase.google.com/project/sktlauncer/firestore" target="_blank" class="hero-button">
+                🚀 Firebase Console'u Aç
+            </a>
+        </div>
+
+        <div class="progress-tracker">
+            <h3 style="font-size: 24px; color: #2d3748; margin-bottom: 10px;">İlerleme Durumu</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            <p style="color: #718096; margin-top: 10px;" id="progressText">Henüz başlanmadı - 4 adım tamamlanacak</p>
+        </div>
+
+        <div class="steps-grid">
+            <!-- Step 1 -->
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-title">Firestore Database Oluştur</div>
+                <div class="step-description">
+                    Firebase Console'da Firestore Database'i aktifleştirin.
+                </div>
+                
+                <div class="warning-box">
+                    <strong>⚠️ Önemli:</strong> Bu adım ZORUNLU! Database olmadan uygulama çalışmaz.
+                </div>
+
+                <ul class="checklist">
+                    <li>Sol menüden "Build" → "Firestore Database"</li>
+                    <li>"Create database" butonuna tıkla</li>
+                    <li>"Start in test mode" seç</li>
+                    <li>Lokasyon: "europe-west3 (Frankfurt)"</li>
+                    <li>"Enable" butonuna bas</li>
+                </ul>
+
+                <a href="https://console.firebase.google.com/project/sktlauncer/firestore" target="_blank" class="step-action" onclick="updateProgress(1)">
+                    📍 Firestore'u Aç
+                </a>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-title">Storage Aktifleştir</div>
+                <div class="step-description">
+                    Ürün fotoğraflarını yüklemek için Firebase Storage'ı aktifleştirin.
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 Neden gerekli?</strong> Admin panelden ürün fotoğrafı yükleme için gerekli.
+                </div>
+
+                <ul class="checklist">
+                    <li>Sol menüden "Build" → "Storage"</li>
+                    <li>"Get started" butonuna tıkla</li>
+                    <li>"Start in test mode" seç</li>
+                    <li>"Next" → "Done" tıkla</li>
+                </ul>
+
+                <a href="https://console.firebase.google.com/project/sktlauncer/storage" target="_blank" class="step-action" onclick="updateProgress(2)">
+                    📦 Storage'ı Aç
+                </a>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-title">Admin Hesabını Kaydet</div>
+                <div class="step-description">
+                    Admin panele giriş için test@magaza.com hesabını Firebase'e kaydedin.
+                </div>
+
+                <div class="success-box">
+                    <strong>✅ Otomatik:</strong> Script otomatik olarak admin hesabını oluşturur.
+                </div>
+
+                <div class="code-box">
+cd /home/user<br>
+python3 create_admin_account.py
+                </div>
+
+                <p style="margin: 15px 0; color: #718096;">
+                    <strong>Beklenen çıktı:</strong> "✅ Admin account created: test@magaza.com"
+                </p>
+
+                <button class="step-action" onclick="updateProgress(3); alert('Terminal\'de komutu çalıştırın:\n\ncd /home/user\npython3 create_admin_account.py\n\nÇıktıda ✅ görünce bu adım tamamlanmış olacak.')">
+                    🔑 Komutu Göster
+                </button>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <div class="step-title">Test Verilerini Yükle</div>
+                <div class="step-description">
+                    Örnek ürünler, talepler ve hesaplar oluşturun.
+                </div>
+
+                <div class="success-box">
+                    <strong>✅ Oluşturulacak:</strong> 5 ürün, 3 talep, 4 hesap
+                </div>
+
+                <div class="code-box">
+cd /home/user<br>
+python3 test_admin_panel.py
+                </div>
+
+                <p style="margin: 15px 0; color: #718096;">
+                    <strong>Beklenen çıktı:</strong> "✅ Successfully created 5 sample products"
+                </p>
+
+                <button class="step-action" onclick="updateProgress(4); alert('Terminal\'de komutu çalıştırın:\n\ncd /home/user\npython3 test_admin_panel.py\n\nÇıktıda ✅ görünce test verileri hazır!')">
+                    📊 Komutu Göster
+                </button>
+            </div>
+        </div>
+
+        <div class="progress-tracker" style="background: linear-gradient(135deg, #e6f2ff 0%, #f0e6ff 100%);">
+            <h3 style="font-size: 24px; color: #2d3748; margin-bottom: 15px;">🔐 Firebase Bağlantı Bilgileri</h3>
+            <p style="color: #718096; margin-bottom: 20px;">Admin panel için bu bilgileri kullanacaksınız:</p>
+
+            <div class="credentials">
+                <div class="item">
+                    <span class="label">Firebase Project ID:</span>
+                    <div class="value">sktlauncer</div>
+                </div>
+                <div class="item">
+                    <span class="label">Firebase API Key:</span>
+                    <div class="value">AIzaSyAlrVDFi-BiXnCSPzOrpAPxsfcBxLJwTo0</div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>📝 Kullanım:</strong> Admin Panel → "⚙️ Ayarlar" sekmesine gidip bu bilgileri girin ve "Ayarları Kaydet" butonuna basın.
+            </div>
+        </div>
+
+        <div class="final-section">
+            <h2>🎉 Tebrikler! Kurulum Tamamlandı</h2>
+            <p>Firestore ve Storage aktifleştirildikten sonra uygulamanız kullanıma hazır!</p>
+            
+            <div class="final-buttons">
+                <a href="https://8080-iw8w70pbb9up1vr4hqi4p-2b54fc91.sandbox.novita.ai/admin_panel_v2.html" target="_blank" class="final-button">
+                    🖥️ Admin Paneli Aç
+                </a>
+                <a href="https://console.firebase.google.com/project/sktlauncer" target="_blank" class="final-button">
+                    🔥 Firebase Console
+                </a>
+                <a href="sandbox:/home/user/flutter_app/build/app/outputs/flutter-apk/app-release.apk" class="final-button">
+                    📱 APK İndir
+                </a>
+            </div>
+
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid rgba(255,255,255,0.3);">
+                <h3 style="font-size: 28px; margin-bottom: 15px;">👑 Admin Panel Login</h3>
+                <p style="font-size: 18px; margin-bottom: 10px;">
+                    <strong>Email:</strong> test@magaza.com<br>
+                    <strong>Şifre:</strong> admin123
+                </p>
+            </div>
+        </div>
+
+        <div style="background: white; border-radius: 20px; padding: 40px; margin-top: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+            <h3 style="font-size: 28px; color: #2d3748; margin-bottom: 20px;">📞 Yardıma mı İhtiyacınız Var?</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div style="padding: 20px; background: #f7fafc; border-radius: 10px;">
+                    <h4 style="color: #2d3748; margin-bottom: 10px;">❓ Soru Sorun</h4>
+                    <p style="color: #718096;">Hangi adımda takıldınız? Bana bildirin, birlikte çözelim!</p>
+                </div>
+                
+                <div style="padding: 20px; background: #f7fafc; border-radius: 10px;">
+                    <h4 style="color: #2d3748; margin-bottom: 10px;">📸 Ekran Görüntüsü</h4>
+                    <p style="color: #718096;">Firebase Console'da ne görüyorsunuz? Ekran görüntüsü paylaşın.</p>
+                </div>
+                
+                <div style="padding: 20px; background: #f7fafc; border-radius: 10px;">
+                    <h4 style="color: #2d3748; margin-bottom: 10px;">🐛 Hata Mesajı</h4>
+                    <p style="color: #718096;">Hata alıyorsanız tam mesajı kopyalayıp gönderin.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+
+        function updateProgress(step) {
+            if (step > currentStep) {
+                currentStep = step;
+            }
+
+            const percentage = (currentStep / 4) * 100;
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = Math.round(percentage) + '%';
+
+            const messages = [
+                'Henüz başlanmadı - 4 adım tamamlanacak',
+                '✅ Firestore Database oluşturuldu - 3 adım kaldı',
+                '✅ Storage aktifleştirildi - 2 adım kaldı',
+                '✅ Admin hesabı kaydedildi - 1 adım kaldı',
+                '🎉 Tamamlandı! Uygulama kullanıma hazır'
+            ];
+
+            progressText.textContent = messages[currentStep];
+
+            if (currentStep === 4) {
+                progressFill.style.background = 'linear-gradient(90deg, #48bb78 0%, #38a169 100%)';
+                setTimeout(() => {
+                    alert('🎉 TEBRİKLER!\n\nTüm adımlar tamamlandı!\n\n✅ Firestore Database hazır\n✅ Storage aktif\n✅ Admin hesabı oluşturuldu\n✅ Test verileri yüklendi\n\nŞimdi Admin Paneli açıp test edebilirsiniz!');
+                }, 500);
+            }
+        }
+
+        // Auto-scroll to hash
+        if(window.location.hash) {
+            setTimeout(() => {
+                document.querySelector(window.location.hash)?.scrollIntoView({behavior: 'smooth'});
+            }, 300);
+        }
+    </script>
+</body>
+</html>

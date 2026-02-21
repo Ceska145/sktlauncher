@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Firestore Database Kurulum - Adım Adım</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        .step-container {
+            padding: 40px;
+        }
+
+        .step {
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-right: 20px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .step-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .step-content {
+            margin-left: 80px;
+            color: #4a5568;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .screenshot {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: 3px solid #e2e8f0;
+        }
+
+        .action-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .action-box h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .action-box p {
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .alert {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .alert-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .alert.info {
+            background: #bee3f8;
+            color: #1e4e8c;
+            border-left: 5px solid #4299e1;
+        }
+
+        .alert.warning {
+            background: #feebc8;
+            color: #7c2d12;
+            border-left: 5px solid #ed8936;
+        }
+
+        .alert.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 5px solid #48bb78;
+        }
+
+        .checklist {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .checklist li {
+            padding: 12px 0;
+            padding-left: 40px;
+            position: relative;
+            font-size: 16px;
+        }
+
+        .checklist li:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 24px;
+            height: 24px;
+            background: #48bb78;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checklist li:after {
+            content: '✓';
+            position: absolute;
+            left: 7px;
+            top: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .highlight {
+            background: #fef5e7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: #d97706;
+        }
+
+        .video-placeholder {
+            background: #edf2f7;
+            padding: 60px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px dashed #cbd5e0;
+        }
+
+        .video-placeholder .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .credentials-box {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #e2e8f0;
+        }
+
+        .credentials-box .item {
+            margin-bottom: 15px;
+        }
+
+        .credentials-box .label {
+            font-weight: 600;
+            color: #2d3748;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .credentials-box .value {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            border: 1px solid #e2e8f0;
+            display: block;
+            word-break: break-all;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 80px;
+        }
+
+        .timeline:before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .progress-indicator {
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+
+        .progress-bar {
+            background: #cbd5e0;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 20px;
+            margin-top: 40px;
+        }
+
+        .footer h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .step-content {
+                margin-left: 0;
+            }
+
+            .timeline {
+                padding-left: 40px;
+            }
+
+            .timeline:before {
+                left: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>🔥 Firestore Database</h1>
+                <p>Adım Adım Kurulum Rehberi</p>
+            </div>
+
+            <div class="step-container">
+                <div class="alert info">
+                    <div class="alert-icon">ℹ️</div>
+                    <div>
+                        <strong>Bu rehber size:</strong><br>
+                        Firebase Firestore Database'i adım adım nasıl oluşturacağınızı gösterir. 
+                        Her adımda ne yapmanız gerektiğini detaylı şekilde açıklıyoruz.
+                        <strong>Tahmini süre: 3-5 dakika</strong>
+                    </div>
+                </div>
+
+                <div class="progress-indicator">
+                    <strong>İlerleme Durumu</strong>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p style="margin-top: 10px; color: #4a5568;" id="progressText">0/7 adım tamamlandı</p>
+                </div>
+
+                <!-- Step 1 -->
+                <div class="step timeline">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Firebase Console'a Giriş</div>
+                    </div>
+                    <div class="step-content">
+                        <p>Firebase Console'u açın ve Google hesabınızla giriş yapın.</p>
+
+                        <div class="action-box">
+                            <h3>🔗 Firebase Console'u Açın</h3>
+                            <p>Aşağıdaki butona tıklayarak direkt projenizin sayfasına gidin</p>
+                            <a href="https://console.firebase.google.com/project/sktlauncer" target="_blank" class="button">
+                                Firebase Console'u Aç
+                            </a>
+                        </div>
+
+                        <div class="alert info">
+                            <div class="alert-icon">💡</div>
+                            <div>
+                                <strong>İpucu:</strong> Link açıldığında Google hesabınızla giriş yapmanız istenebilir. 
+                                Firebase projesini oluştururken kullandığınız Gmail hesabıyla giriş yapın.
+                            </div>
+                        </div>
+
+                        <ul class="checklist">
+                            <li>Firebase Console sayfası açıldı</li>
+                            <li>Google hesabıyla giriş yapıldı</li>
+                            <li><span class="code">sktlauncer</span> projesi görünüyor</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="step timeline">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Firestore Database Seçimi</div>
+                    </div>
+                    <div class="step-content">
+                        <p>Sol menüden <span class="highlight">Build</span> bölümünü bulun ve <span class="highlight">Firestore Database</span> seçeneğine tıklayın.</p>
+
+                        <div class="video-placeholder">
+                            <div class="icon">📍</div>
+                            <p><strong>Sol Menü:</strong> Build → Firestore Database</p>
+                        </div>
+
+                        <ul class="checklist">
+                            <li>Sol menüde <span class="code">Build</span> bölümünü genişlettim</li>
+                            <li><span class="code">Firestore Database</span> seçeneğine tıkladım</li>
+                            <li>Firestore Database sayfası açıldı</li>
+                        </ul>
+
+                        <div class="alert warning">
+                            <div class="alert-icon">⚠️</div>
+                            <div>
+                                <strong>Dikkat:</strong> <span class="code">Realtime Database</span> değil, 
+                                <span class="code">Firestore Database</span> seçeneğine tıklayın!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="step timeline">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-title">"Create Database" Butonuna Tıklayın</div>
+                    </div>
+                    <div class="step-content">
+                        <p>Firestore Database sayfasında ortada büyük bir <span class="highlight">"Create database"</span> butonu göreceksiniz. Bu butona tıklayın.</p>
+
+                        <div class="action-box">
+                            <h3>🎯 Create Database</h3>
+                            <p>Veritabanı oluşturma sihirbazı başlayacak</p>
+                        </div>
+
+                        <ul class="checklist">
+                            <li><span class="code">Create database</span> butonuna tıkladım</li>
+                            <li>Yeni bir modal/popup pencere açıldı</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="step timeline">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Güvenlik Modu Seçimi</div>
+                    </div>
+                    <div class="step-content">
+                        <p>İki seçenek sunulacak: <span class="highlight">Production mode</span> ve <span class="highlight">Test mode</span></p>
+
+                        <div class="alert success">
+                            <div class="alert-icon">✅</div>
+                            <div>
+                                <strong>ÖNERİLEN:</strong> <span class="highlight">Test mode</span> seçin!<br>
+                                <ul style="margin-top: 10px; margin-left: 20px;">
+                                    <li>30 gün boyunca serbest erişim</li>
+                                    <li>Geliştirme ve test için ideal</li>
+                                    <li>Güvenlik kurallarını daha sonra güncelleyebilirsiniz</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <ul class="checklist">
+                            <li><span class="code">Start in test mode</span> seçeneğini seçtim</li>
+                            <li><span class="code">Next</span> butonuna tıkladım</li>
+                        </ul>
+
+                        <div class="alert info">
+                            <div class="alert-icon">💡</div>
+                            <div>
+                                <strong>Test Mode Nedir?</strong><br>
+                                Test modunda herkes okuyup yazabilir (authentication gerekmez). 
+                                Bu geliştirme için uygundur. Production'a geçmeden önce güvenlik kurallarını güncelleyebilirsiniz.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="step timeline">
+                    <div class="step-header">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Sunucu Lokasyonu Seçimi</div>
+                    </div>
+                    <div class="step-content">
+                        <p>Firestore sunucusunun hangi bölgede olacağını seçin. <strong>Bu seçim daha sonra değiştirilemez!</strong></p>
+
+                        <div class="action-box">
+                            <h3>📍 Önerilen Lokasyon</h3>
+                            <p style="font-size: 24px; margin: 20px 0;"><strong>europe-west3 (Frankfurt)</strong></p>
+                            <p>Türkiye'ye en yakın sunucu - En düşük gecikme süresi</p>
+                        </div>
+
+                        <div class="alert info">
+                            <div class="alert-icon">🌍</div>
+                            <div>
+                                <strong>Diğer Avrupa Seçenekleri:</strong><br>
+                                • <span class="code">eur3 (europe-west)</span> - Belçika<br>
+                                • <span class="code">europe-west1</span> - Belçika<br>
+                                • <span class="code">europe-west2</span> - Londra<br>
+                                • <span class="code">europe-west3</span> - Frankfurt ⭐ ÖNERİLEN
+                            </div>
+                        </div>
+
+                        <ul class="checklist">
+                            <li>Dropdown menüden <span class="code">europe-west3 (Frankfurt)</span> seçtim</li>
+                            <li><span class="code">Enable</span> butonuna tıkladım</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 6 -->
+                <div class="step timeline">
+                    <div class="step-header">
+                        <div class="step-number">6</div>
+                        <div class="step-title">Database Oluşturma (Otomatik)</div>
+                    </div>
+                    <div class="step-content">
+                        <p>Firebase şimdi Firestore Database'inizi oluşturuyor. Bu işlem <strong>30-60 saniye</strong> sürebilir.</p>
+
+                        <div class="video-placeholder">
+                            <div class="icon">⏳</div>
+                            <p><strong>Lütfen bekleyin...</strong></p>
+                            <p style="margin-top: 10px; color: #718096;">
+                                "Setting up Cloud Firestore..." mesajını göreceksiniz
+                            </p>
+                        </div>
+
+                        <div class="alert success">
+                            <div class="alert-icon">🎉</div>
+                            <div>
+                                <strong>Başarılı!</strong><br>
+                                Database oluşturulduğunda boş bir Firestore Database ekranı göreceksiniz.
+                                Üstte "Cloud Firestore" başlığı ve "Start collection" butonu olacak.
+                            </div>
+                        </div>
+
+                        <ul class="checklist">
+                            <li>Oluşturma işlemi tamamlandı</li>
+                            <li>Boş Firestore Database ekranı görünüyor</li>
+                            <li><span class="code">Start collection</span> butonu mevcut</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 7 -->
+                <div class="step timeline">
+                    <div class="step-header">
+                        <div class="step-number">7</div>
+                        <div class="step-title">Firebase Storage Aktifleştirme</div>
+                    </div>
+                    <div class="step-content">
+                        <p>Ürün fotoğraflarını yükleyebilmek için Firebase Storage'ı da aktifleştirmeliyiz.</p>
+
+                        <div class="action-box">
+                            <h3>📦 Storage Sayfasına Git</h3>
+                            <p>Sol menüden Build → Storage seçeneğine tıklayın</p>
+                            <a href="https://console.firebase.google.com/project/sktlauncer/storage" target="_blank" class="button">
+                                Storage Sayfasını Aç
+                            </a>
+                        </div>
+
+                        <ul class="checklist">
+                            <li>Sol menüden <span class="code">Storage</span> seçeneğine tıkladım</li>
+                            <li><span class="code">Get started</span> butonuna bastım</li>
+                            <li><span class="code">Start in test mode</span> seçtim</li>
+                            <li><span class="code">Next</span> → <span class="code">Done</span> tıkladım</li>
+                            <li>Storage klasör görünümü açıldı</li>
+                        </ul>
+
+                        <div class="alert info">
+                            <div class="alert-icon">💡</div>
+                            <div>
+                                <strong>Storage neden gerekli?</strong><br>
+                                Admin panelden ürün eklerken fotoğraf yükleme özelliği Storage kullanır. 
+                                Fotoğraflar <span class="code">products/</span> klasörüne kaydedilir.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert success" style="margin-top: 40px;">
+                    <div class="alert-icon">🎉</div>
+                    <div>
+                        <strong style="font-size: 20px;">TEBRİKLER! Firebase Kurulumu Tamamlandı</strong><br><br>
+                        Firestore Database ve Storage başarıyla aktifleştirildi. Artık Admin Panel v2'yi kullanabilirsiniz!
+                    </div>
+                </div>
+
+                <div class="action-box" style="margin-top: 40px;">
+                    <h3>🚀 Sonraki Adım: Test Verilerini Yükleyin</h3>
+                    <p>Database oluşturduğunuza göre, şimdi örnek verilerle test edebilirsiniz</p>
+                    <div style="margin-top: 20px;">
+                        <a href="#next-steps" class="button">
+                            Test Verilerini Yükle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="next-steps">
+            <div class="step-container">
+                <h2 style="font-size: 32px; margin-bottom: 30px; color: #2d3748;">📊 Test Verilerini Yükleme</h2>
+
+                <div class="alert info">
+                    <div class="alert-icon">ℹ️</div>
+                    <div>
+                        Firestore Database başarıyla oluşturuldu! Şimdi örnek ürünler, talepler ve hesaplar ekleyerek 
+                        Admin Panel v2'yi test edebilirsiniz.
+                    </div>
+                </div>
+
+                <h3 style="margin: 30px 0 20px; font-size: 24px; color: #2d3748;">1️⃣ Test Scriptini Çalıştırın</h3>
+                
+                <p style="margin-bottom: 20px; color: #4a5568; font-size: 16px;">
+                    Terminal veya komut satırında aşağıdaki komutu çalıştırın:
+                </p>
+
+                <div style="background: #2d3748; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <code style="color: #68d391; font-size: 16px; display: block;">
+cd /home/user<br>
+python3 test_admin_panel.py
+                    </code>
+                </div>
+
+                <h3 style="margin: 30px 0 20px; font-size: 24px; color: #2d3748;">2️⃣ Beklenen Çıktı</h3>
+
+                <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin: 20px 0; border: 2px solid #e2e8f0;">
+                    <pre style="margin: 0; color: #2d3748; font-family: 'Courier New', monospace; font-size: 14px;">
+============================================================
+🧪 ADMIN PANEL V2 TEST SCRIPT
+============================================================
+<span style="color: #48bb78;">✅ Firebase initialized successfully</span>
+
+📦 Creating sample products...
+<span style="color: #48bb78;">  ✅ Added: Sütas Süt 1L (8690504001234)
+  ✅ Added: Pınar Beyaz Peynir 500g (8690637001122)
+  ✅ Added: Ülker Çikolata (8690632001456)
+  ✅ Added: Coca Cola 1L (8690102001789)
+  ✅ Added: Lay's Patates Cipsi (8690555002341)
+✅ Successfully created 5 sample products</span>
+
+📝 Creating sample product requests...
+<span style="color: #48bb78;">  ✅ Added request: Selpak Kağıt Havlu - pending
+  ✅ Added request: Eti Crax Kraker - pending
+  ✅ Added request: Domestos Çamaşır Suyu - approved
+✅ Successfully created 3 sample requests</span>
+
+👥 Creating sample accounts...
+<span style="color: #48bb78;">  ✅ Added: ABC Market (abc@market.com) - paid
+  ✅ Added: XYZ Bakkal (xyz@bakkal.com) - paid
+  ✅ Added: DEF Süpermarket (def@super.com) - overdue
+  ✅ Added: GHI Mini Market (ghi@mini.com) - pending
+✅ Successfully created 4 sample accounts</span>
+
+📊 TEST SUMMARY:
+<span style="color: #48bb78;">  Products Created: ✅
+  Requests Created: ✅
+  Accounts Created: ✅</span>
+                    </pre>
+                </div>
+
+                <h3 style="margin: 30px 0 20px; font-size: 24px; color: #2d3748;">3️⃣ Admin Panel'i Açın</h3>
+
+                <div class="credentials-box">
+                    <div class="item">
+                        <span class="label">Admin Panel URL:</span>
+                        <a href="https://8080-iw8w70pbb9up1vr4hqi4p-2b54fc91.sandbox.novita.ai/admin_panel_v2.html" target="_blank" class="value" style="color: #667eea; text-decoration: none;">
+                            https://8080-iw8w70pbb9up1vr4hqi4p-2b54fc91.sandbox.novita.ai/admin_panel_v2.html
+                        </a>
+                    </div>
+                    <div class="item">
+                        <span class="label">Firebase Project ID:</span>
+                        <span class="value">sktlauncer</span>
+                    </div>
+                    <div class="item">
+                        <span class="label">Firebase API Key:</span>
+                        <span class="value">AIzaSyAlrVDFi-BiXnCSPzOrpAPxsfcBxLJwTo0</span>
+                    </div>
+                </div>
+
+                <h3 style="margin: 30px 0 20px; font-size: 24px; color: #2d3748;">4️⃣ Ayarları Kaydedin</h3>
+
+                <ul class="checklist">
+                    <li>Admin panelde <span class="code">⚙️ Ayarlar</span> sekmesine gidin</li>
+                    <li>Yukarıdaki <strong>Project ID</strong> ve <strong>API Key</strong>'i yapıştırın</li>
+                    <li><span class="code">💾 Ayarları Kaydet</span> butonuna basın</li>
+                    <li>Sayfa otomatik yenilenecek</li>
+                    <li>Header'da <span class="code">🟢 Firebase Bağlı</span> görmelisiniz</li>
+                </ul>
+
+                <h3 style="margin: 30px 0 20px; font-size: 24px; color: #2d3748;">5️⃣ Test Edin</h3>
+
+                <ul class="checklist">
+                    <li><strong>Dashboard:</strong> 5 ürün, 2 bekleyen talep, 3 aktif hesap göreceksiniz</li>
+                    <li><strong>Ürün Kataloğu:</strong> 5 örnek ürün listelenmiş olacak</li>
+                    <li><strong>Yeni Ürün Ekle:</strong> Fotoğraf yükleme ve progress bar'ı test edin</li>
+                    <li><strong>Talepler:</strong> Bekleyen talepleri onaylayın/reddedin</li>
+                    <li><strong>Hesaplar:</strong> Yeni mağaza hesabı oluşturun</li>
+                </ul>
+
+                <div class="action-box" style="margin-top: 40px;">
+                    <h3>🎯 Admin Panel v2'yi Kullanmaya Başlayın</h3>
+                    <p>Firestore hazır, test verileri yüklendi - Şimdi keşfetme zamanı!</p>
+                    <a href="https://8080-iw8w70pbb9up1vr4hqi4p-2b54fc91.sandbox.novita.ai/admin_panel_v2.html" target="_blank" class="button">
+                        Admin Panel v2'yi Aç
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <h3>🆘 Sorun mu Yaşıyorsunuz?</h3>
+            <p style="margin: 20px 0;">
+                Herhangi bir adımda takılırsanız veya hata alırsanız bana bildirin!<br>
+                Firebase Console'da neler görüyorsunuz, hangi adımda sorun yaşıyorsunuz?
+            </p>
+            <p style="opacity: 0.8;">
+                📧 Admin Panel v2 Documentation | Firebase Support | Expiry Alert Team
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Progress tracking
+        function updateProgress(step) {
+            const total = 7;
+            const percentage = (step / total) * 100;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = step + '/' + total + ' adım tamamlandı';
+        }
+
+        // Auto-scroll to hash
+        if(window.location.hash) {
+            setTimeout(() => {
+                document.querySelector(window.location.hash).scrollIntoView({behavior: 'smooth'});
+            }, 300);
+        }
+
+        // Initial progress
+        updateProgress(0);
+
+        // You can call updateProgress(1), updateProgress(2), etc. as user progresses
+        // For demo, let's show all steps as accessible
+        setTimeout(() => updateProgress(0), 500);
+    </script>
+</body>
+</html>

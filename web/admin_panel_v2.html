@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expiry Alert - Admin Panel v2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --success: #48bb78;
+            --danger: #f56565;
+            --warning: #ed8936;
+            --info: #4299e1;
+            --text: #2d3748;
+            --text-light: #718096;
+            --bg: #f7fafc;
+            --card-bg: white;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 30px 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .nav-btn {
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: var(--text);
+        }
+
+        .firebase-status {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .firebase-status.connected {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .firebase-status.disconnected {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.primary {
+            border-left: 5px solid var(--primary);
+        }
+
+        .stat-card.success {
+            border-left: 5px solid var(--success);
+        }
+
+        .stat-card.warning {
+            border-left: 5px solid var(--warning);
+        }
+
+        .stat-card.danger {
+            border-left: 5px solid var(--danger);
+        }
+
+        .stat-info h3 {
+            font-size: 36px;
+            margin-bottom: 5px;
+        }
+
+        .stat-icon {
+            font-size: 48px;
+            opacity: 0.3;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: var(--text);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead {
+            background: var(--bg);
+        }
+
+        .data-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table tr:hover {
+            background: var(--bg);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.primary {
+            background: #e6f2ff;
+            color: var(--primary);
+        }
+
+        .badge.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge.danger {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .badge.warning {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .badge.pending {
+            background: #bee3f8;
+            color: #1e4e8c;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .action-btn.edit {
+            background: #bee3f8;
+            color: #1e4e8c;
+        }
+
+        .action-btn.delete {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            flex: 1;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        .alert.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 5px solid var(--success);
+        }
+
+        .alert.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 5px solid var(--danger);
+        }
+
+        .alert.info {
+            background: #bee3f8;
+            color: #1e4e8c;
+            border-left: 5px solid var(--info);
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .image-preview.active {
+            display: block;
+        }
+
+        .timeout-warning {
+            background: #fef5e7;
+            border: 2px solid #f39c12;
+            color: #7c4a00;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .timeout-warning.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">🛒 Expiry Alert Admin</div>
+            <button class="nav-btn active" onclick="showSection('dashboard')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="showSection('catalog')">📦 Ürün Kataloğu</button>
+            <button class="nav-btn" onclick="showSection('requests')">📝 Ürün Talepleri</button>
+            <button class="nav-btn" onclick="showSection('accounts')">👥 Hesap Yönetimi</button>
+            <button class="nav-btn" onclick="showSection('bulk')">📤 Toplu Yükleme</button>
+            <button class="nav-btn" onclick="showSection('settings')">⚙️ Ayarlar</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Admin Panel v2</h1>
+                <div class="firebase-status disconnected" id="firebaseStatus">
+                    🔴 Firebase Bağlı Değil
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card primary">
+                        <div class="stat-info">
+                            <h3 id="totalProducts">0</h3>
+                            <p>Toplam Ürün</p>
+                        </div>
+                        <div class="stat-icon">📦</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-info">
+                            <h3 id="pendingRequests">0</h3>
+                            <p>Bekleyen Talepler</p>
+                        </div>
+                        <div class="stat-icon">📝</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-info">
+                            <h3 id="activeAccounts">0</h3>
+                            <p>Aktif Hesaplar</p>
+                        </div>
+                        <div class="stat-icon">✅</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="stat-info">
+                            <h3 id="expiredAccounts">0</h3>
+                            <p>Süresi Dolan</p>
+                        </div>
+                        <div class="stat-icon">⚠️</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Son Aktiviteler</h3>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>İşlem</th>
+                                <th>Detay</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityLog">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #718096;">Firebase bağlantısı bekleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Catalog Section -->
+            <div id="catalog" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Ürün Kataloğu</h3>
+                        <button class="btn btn-primary" onclick="openAddProductModal()">
+                            ➕ Yeni Ürün Ekle
+                        </button>
+                    </div>
+
+                    <div class="alert" id="catalogAlert"></div>
+                    <div class="timeout-warning" id="catalogTimeout">
+                        ⚠️ <strong>Dikkat:</strong> Bağlantı yavaş görünüyor. Lütfen Firebase ayarlarınızı kontrol edin.
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Fotoğraf</th>
+                                <th>Barkod</th>
+                                <th>Ürün Adı</th>
+                                <th>Marka</th>
+                                <th>Kategori</th>
+                                <th>Raf Ömrü</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="catalogTable">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: #718096;">Ürünler yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Requests Section -->
+            <div id="requests" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Kullanıcı Ürün Talepleri</h3>
+                        <span class="badge pending" id="requestBadge">0 Bekleyen</span>
+                    </div>
+
+                    <div class="alert" id="requestsAlert"></div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Mağaza</th>
+                                <th>Barkod</th>
+                                <th>Ürün Adı</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requestsTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #718096;">Talepler yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Accounts Section -->
+            <div id="accounts" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Hesap Yönetimi</h3>
+                        <button class="btn btn-primary" onclick="openAddAccountModal()">
+                            ➕ Yeni Hesap Ekle
+                        </button>
+                    </div>
+
+                    <div class="alert" id="accountsAlert"></div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mağaza Adı</th>
+                                <th>E-posta</th>
+                                <th>Başlangıç</th>
+                                <th>Bitiş</th>
+                                <th>Ücret</th>
+                                <th>Ödeme</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountsTable">
+                            <tr>
+                                <td colspan="8" style="text-align: center; color: #718096;">Hesaplar yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bulk Upload Section -->
+            <div id="bulk" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Toplu Ürün Yükleme (CSV)</h3>
+                    </div>
+
+                    <div style="padding: 20px;">
+                        <iframe 
+                            src="product_uploader.html" 
+                            style="width: 100%; height: 600px; border: none; border-radius: 8px;"
+                        ></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Firebase Ayarları</h3>
+                    </div>
+
+                    <div style="padding: 20px;">
+                        <div class="alert info active">
+                            ℹ️ Firebase ayarlarınızı buradan güncelleyebilirsiniz. Ayarlar tarayıcınızda güvenli bir şekilde saklanır.
+                        </div>
+
+                        <div class="form-group">
+                            <label>Firebase Project ID</label>
+                            <input type="text" id="settingsProjectId" placeholder="your-project-id">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Firebase API Key</label>
+                            <input type="text" id="settingsApiKey" placeholder="AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXX">
+                        </div>
+
+                        <button class="btn btn-primary" onclick="saveSettings()">
+                            💾 Ayarları Kaydet
+                        </button>
+
+                        <div class="alert" id="settingsAlert" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-content">
+            <h2 class="modal-header">Yeni Ürün Ekle</h2>
+
+            <div class="progress-bar" id="uploadProgress">
+                <div class="progress-fill" id="uploadProgressFill"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Barkod *</label>
+                <input type="text" id="productBarcode" placeholder="8690504001234">
+            </div>
+
+            <div class="form-group">
+                <label>Ürün Adı *</label>
+                <input type="text" id="productName" placeholder="Sütas Süt 1L">
+            </div>
+
+            <div class="form-group">
+                <label>Marka *</label>
+                <input type="text" id="productBrand" placeholder="Sütas">
+            </div>
+
+            <div class="form-group">
+                <label>Kategori *</label>
+                <select id="productCategory">
+                    <option value="">Kategori Seçin</option>
+                    <option value="Süt Ürünleri">Süt Ürünleri</option>
+                    <option value="Et ve Şarküteri">Et ve Şarküteri</option>
+                    <option value="Meyve ve Sebze">Meyve ve Sebze</option>
+                    <option value="Fırın ve Pastane">Fırın ve Pastane</option>
+                    <option value="Temel Gıda">Temel Gıda</option>
+                    <option value="İçecek">İçecek</option>
+                    <option value="Atıştırmalık">Atıştırmalık</option>
+                    <option value="Dondurulmuş Gıda">Dondurulmuş Gıda</option>
+                    <option value="Hazır Yemek">Hazır Yemek</option>
+                    <option value="Diğer">Diğer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Birim</label>
+                <input type="text" id="productUnit" value="Adet" placeholder="Adet, Kg, L">
+            </div>
+
+            <div class="form-group">
+                <label>Raf Ömrü (Gün)</label>
+                <input type="number" id="productShelfLife" value="30" min="1">
+            </div>
+
+            <div class="form-group">
+                <label>Açıklama</label>
+                <textarea id="productDescription" rows="3" placeholder="Ürün açıklaması (opsiyonel)"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Ürün Fotoğrafı</label>
+                <input type="file" id="productImage" accept="image/*" onchange="previewImage(this)">
+                <img id="imagePreview" class="image-preview">
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="addProduct()">
+                    💾 Kaydet
+                </button>
+                <button class="btn btn-danger" onclick="closeAddProductModal()">
+                    ❌ İptal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div class="modal" id="addAccountModal">
+        <div class="modal-content">
+            <h2 class="modal-header">Yeni Hesap Ekle</h2>
+
+            <div class="form-group">
+                <label>Mağaza Adı *</label>
+                <input type="text" id="accountStoreName" placeholder="ABC Market">
+            </div>
+
+            <div class="form-group">
+                <label>E-posta *</label>
+                <input type="email" id="accountEmail" placeholder="magaza@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Şifre *</label>
+                <input type="password" id="accountPassword" placeholder="********">
+            </div>
+
+            <div class="form-group">
+                <label>Başlangıç Tarihi *</label>
+                <input type="date" id="accountStartDate">
+            </div>
+
+            <div class="form-group">
+                <label>Bitiş Tarihi *</label>
+                <input type="date" id="accountEndDate">
+            </div>
+
+            <div class="form-group">
+                <label>Aylık Ücret (₺)</label>
+                <input type="number" id="accountMonthlyFee" value="299" min="0">
+            </div>
+
+            <div class="form-group">
+                <label>Ödeme Durumu</label>
+                <select id="accountPaymentStatus">
+                    <option value="paid">Ödendi</option>
+                    <option value="pending">Bekliyor</option>
+                    <option value="overdue">Gecikmiş</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="addAccount()">
+                    💾 Kaydet
+                </button>
+                <button class="btn btn-danger" onclick="closeAddAccountModal()">
+                    ❌ İptal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingText">İşlem yapılıyor...</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+
+        // Global state
+        window.db = null;
+        window.storage = null;
+        window.currentImageFile = null;
+        let requestTimeouts = new Map();
+
+        // Initialize Firebase
+        function initFirebase() {
+            const projectId = localStorage.getItem('firebase_project_id');
+            const apiKey = localStorage.getItem('firebase_api_key');
+
+            if (!projectId || !apiKey) {
+                updateFirebaseStatus(false);
+                return false;
+            }
+
+            try {
+                const firebaseConfig = {
+                    apiKey: apiKey,
+                    authDomain: `${projectId}.firebaseapp.com`,
+                    projectId: projectId,
+                    storageBucket: `${projectId}.appspot.com`,
+                    messagingSenderId: "000000000000",
+                    appId: "1:000000000000:web:0000000000000000000000"
+                };
+
+                const app = initializeApp(firebaseConfig);
+                window.db = getFirestore(app);
+                window.storage = getStorage(app);
+
+                updateFirebaseStatus(true);
+                loadDashboardData();
+                return true;
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                updateFirebaseStatus(false);
+                showAlert('settingsAlert', 'error', '❌ Firebase bağlantı hatası: ' + error.message);
+                return false;
+            }
+        }
+
+        // Update Firebase status
+        function updateFirebaseStatus(connected) {
+            const statusEl = document.getElementById('firebaseStatus');
+            if (connected) {
+                statusEl.textContent = '🟢 Firebase Bağlı';
+                statusEl.classList.remove('disconnected');
+                statusEl.classList.add('connected');
+            } else {
+                statusEl.textContent = '🔴 Firebase Bağlı Değil';
+                statusEl.classList.remove('connected');
+                statusEl.classList.add('disconnected');
+            }
+        }
+
+        // Show/hide sections
+        window.showSection = function(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load data for specific sections
+            if (sectionId === 'catalog') loadCatalog();
+            if (sectionId === 'requests') loadRequests();
+            if (sectionId === 'accounts') loadAccounts();
+        };
+
+        // Show alert
+        function showAlert(elementId, type, message) {
+            const alert = document.getElementById(elementId);
+            alert.className = `alert ${type} active`;
+            alert.textContent = message;
+            setTimeout(() => {
+                alert.classList.remove('active');
+            }, 5000);
+        }
+
+        // Show loading
+        function showLoading(text = 'İşlem yapılıyor...') {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // Timeout handler
+        function setRequestTimeout(name, duration = 10000) {
+            const timeoutId = setTimeout(() => {
+                document.getElementById('catalogTimeout').classList.add('active');
+                console.warn(`Request timeout: ${name}`);
+            }, duration);
+            requestTimeouts.set(name, timeoutId);
+        }
+
+        function clearRequestTimeout(name) {
+            const timeoutId = requestTimeouts.get(name);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                requestTimeouts.delete(name);
+                document.getElementById('catalogTimeout').classList.remove('active');
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            if (!window.db) return;
+
+            try {
+                showLoading('Dashboard yükleniyor...');
+
+                const [catalogSnap, requestsSnap, accountsSnap] = await Promise.all([
+                    getDocs(collection(window.db, 'product_catalog')),
+                    getDocs(collection(window.db, 'product_requests')),
+                    getDocs(collection(window.db, 'accounts'))
+                ]);
+
+                document.getElementById('totalProducts').textContent = catalogSnap.size;
+                document.getElementById('pendingRequests').textContent = requestsSnap.docs.filter(d => d.data().status === 'pending').length;
+
+                let activeCount = 0;
+                let expiredCount = 0;
+                const now = new Date();
+
+                accountsSnap.forEach(doc => {
+                    const data = doc.data();
+                    const endDate = new Date(data.endDate);
+                    if (endDate > now) {
+                        activeCount++;
+                    } else {
+                        expiredCount++;
+                    }
+                });
+
+                document.getElementById('activeAccounts').textContent = activeCount;
+                document.getElementById('expiredAccounts').textContent = expiredCount;
+
+                // Load activity log
+                loadActivityLog(catalogSnap, requestsSnap, accountsSnap);
+
+                hideLoading();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                hideLoading();
+                showAlert('catalogAlert', 'error', '❌ Dashboard yüklenirken hata: ' + error.message);
+            }
+        }
+
+        // Load activity log
+        function loadActivityLog(catalogSnap, requestsSnap, accountsSnap) {
+            const tbody = document.getElementById('activityLog');
+            tbody.innerHTML = '';
+
+            let activities = [];
+
+            catalogSnap.forEach(doc => {
+                const data = doc.data();
+                activities.push({
+                    date: new Date(data.createdAt || Date.now()),
+                    action: 'Ürün Eklendi',
+                    detail: data.name,
+                    status: 'success'
+                });
+            });
+
+            requestsSnap.forEach(doc => {
+                const data = doc.data();
+                activities.push({
+                    date: new Date(data.createdAt || Date.now()),
+                    action: 'Ürün Talebi',
+                    detail: data.productName,
+                    status: data.status === 'pending' ? 'pending' : data.status === 'approved' ? 'success' : 'danger'
+                });
+            });
+
+            activities.sort((a, b) => b.date - a.date);
+            activities = activities.slice(0, 10);
+
+            if (activities.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #718096;">Henüz aktivite yok</td></tr>';
+                return;
+            }
+
+            activities.forEach(activity => {
+                const row = `
+                    <tr>
+                        <td>${activity.date.toLocaleDateString('tr-TR')}</td>
+                        <td>${activity.action}</td>
+                        <td>${activity.detail}</td>
+                        <td><span class="badge ${activity.status}">${getStatusText(activity.status)}</span></td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'success': 'Başarılı',
+                'pending': 'Bekliyor',
+                'danger': 'Reddedildi'
+            };
+            return statusMap[status] || status;
+        }
+
+        // Load catalog
+        async function loadCatalog() {
+            if (!window.db) return;
+
+            try {
+                setRequestTimeout('loadCatalog', 10000);
+                showLoading('Ürün kataloğu yükleniyor...');
+
+                const catalogSnap = await getDocs(collection(window.db, 'product_catalog'));
+                const tbody = document.getElementById('catalogTable');
+                tbody.innerHTML = '';
+
+                clearRequestTimeout('loadCatalog');
+
+                if (catalogSnap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #718096;">Henüz ürün eklenmemiş</td></tr>';
+                    hideLoading();
+                    return;
+                }
+
+                catalogSnap.forEach((doc) => {
+                    const data = doc.data();
+                    const row = `
+                        <tr>
+                            <td><img src="${data.imageUrl || 'https://via.placeholder.com/50'}" style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover;"></td>
+                            <td><strong>${doc.id}</strong></td>
+                            <td>${data.name}</td>
+                            <td>${data.brand}</td>
+                            <td><span class="badge primary">${data.category}</span></td>
+                            <td>${data.defaultShelfLifeDays} gün</td>
+                            <td>
+                                <button class="action-btn edit" onclick="editProduct('${doc.id}')">✏️ Düzenle</button>
+                                <button class="action-btn delete" onclick="deleteProduct('${doc.id}')">🗑️ Sil</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+                hideLoading();
+            } catch (error) {
+                console.error('Error loading catalog:', error);
+                clearRequestTimeout('loadCatalog');
+                hideLoading();
+                showAlert('catalogAlert', 'error', '❌ Katalog yüklenirken hata: ' + error.message);
+            }
+        }
+
+        // Add product
+        window.addProduct = async function() {
+            const barcode = document.getElementById('productBarcode').value.trim();
+            const name = document.getElementById('productName').value.trim();
+            const brand = document.getElementById('productBrand').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const unit = document.getElementById('productUnit').value.trim();
+            const shelfLife = parseInt(document.getElementById('productShelfLife').value);
+            const description = document.getElementById('productDescription').value.trim();
+
+            if (!barcode || !name || !brand || !category) {
+                alert('⚠️ Lütfen zorunlu alanları doldurun!');
+                return;
+            }
+
+            try {
+                showLoading('Ürün kaydediliyor...');
+                document.getElementById('uploadProgress').classList.add('active');
+
+                let imageUrl = '';
+
+                // Upload image if exists
+                if (window.currentImageFile) {
+                    document.getElementById('uploadProgressFill').style.width = '30%';
+                    const storageRef = ref(window.storage, `products/${barcode}_${Date.now()}.jpg`);
+                    
+                    await uploadBytes(storageRef, window.currentImageFile);
+                    document.getElementById('uploadProgressFill').style.width = '60%';
+                    
+                    imageUrl = await getDownloadURL(storageRef);
+                    document.getElementById('uploadProgressFill').style.width = '80%';
+                }
+
+                // Add to Firestore
+                await setDoc(doc(window.db, 'product_catalog', barcode), {
+                    name: name,
+                    brand: brand,
+                    category: category,
+                    imageUrl: imageUrl,
+                    description: description,
+                    unit: unit,
+                    defaultShelfLifeDays: shelfLife,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                });
+
+                document.getElementById('uploadProgressFill').style.width = '100%';
+
+                hideLoading();
+                showAlert('catalogAlert', 'success', '✅ Ürün başarıyla eklendi!');
+                closeAddProductModal();
+                loadCatalog();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error adding product:', error);
+                hideLoading();
+                alert('❌ Ürün eklenirken hata oluştu: ' + error.message);
+            } finally {
+                document.getElementById('uploadProgress').classList.remove('active');
+                document.getElementById('uploadProgressFill').style.width = '0%';
+            }
+        };
+
+        // Delete product
+        window.deleteProduct = async function(barcode) {
+            if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) return;
+
+            try {
+                showLoading('Ürün siliniyor...');
+                await deleteDoc(doc(window.db, 'product_catalog', barcode));
+                hideLoading();
+                showAlert('catalogAlert', 'success', '✅ Ürün silindi!');
+                loadCatalog();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                hideLoading();
+                alert('❌ Silme hatası: ' + error.message);
+            }
+        };
+
+        // Load requests
+        async function loadRequests() {
+            if (!window.db) return;
+
+            try {
+                showLoading('Talepler yükleniyor...');
+                const requestsSnap = await getDocs(collection(window.db, 'product_requests'));
+                const tbody = document.getElementById('requestsTable');
+                tbody.innerHTML = '';
+
+                const pendingCount = requestsSnap.docs.filter(d => d.data().status === 'pending').length;
+                document.getElementById('requestBadge').textContent = `${pendingCount} Bekleyen`;
+
+                if (requestsSnap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #718096;">Henüz talep yok</td></tr>';
+                    hideLoading();
+                    return;
+                }
+
+                requestsSnap.forEach((doc) => {
+                    const data = doc.data();
+                    const statusBadge = data.status === 'pending' ? 'pending' : 
+                                      data.status === 'approved' ? 'success' : 'danger';
+                    const statusText = data.status === 'pending' ? 'Bekliyor' :
+                                     data.status === 'approved' ? 'Onaylandı' : 'Reddedildi';
+
+                    const row = `
+                        <tr>
+                            <td>${new Date(data.createdAt).toLocaleDateString('tr-TR')}</td>
+                            <td>${data.storeName || 'Bilinmiyor'}</td>
+                            <td><strong>${data.barcode}</strong></td>
+                            <td>${data.productName}</td>
+                            <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                            <td>
+                                ${data.status === 'pending' ? `
+                                    <button class="action-btn edit" onclick="approveRequest('${doc.id}')">✅ Onayla</button>
+                                    <button class="action-btn delete" onclick="rejectRequest('${doc.id}')">❌ Reddet</button>
+                                ` : '—'}
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+                hideLoading();
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                hideLoading();
+                showAlert('requestsAlert', 'error', '❌ Talepler yüklenirken hata: ' + error.message);
+            }
+        }
+
+        // Approve/Reject requests
+        window.approveRequest = async function(requestId) {
+            try {
+                showLoading('Talep onaylanıyor...');
+                await updateDoc(doc(window.db, 'product_requests', requestId), {
+                    status: 'approved',
+                    updatedAt: new Date().toISOString()
+                });
+                hideLoading();
+                showAlert('requestsAlert', 'success', '✅ Talep onaylandı!');
+                loadRequests();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error approving request:', error);
+                hideLoading();
+                alert('❌ Onaylama hatası: ' + error.message);
+            }
+        };
+
+        window.rejectRequest = async function(requestId) {
+            try {
+                showLoading('Talep reddediliyor...');
+                await updateDoc(doc(window.db, 'product_requests', requestId), {
+                    status: 'rejected',
+                    updatedAt: new Date().toISOString()
+                });
+                hideLoading();
+                showAlert('requestsAlert', 'success', '✅ Talep reddedildi!');
+                loadRequests();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                hideLoading();
+                alert('❌ Red etme hatası: ' + error.message);
+            }
+        };
+
+        // Load accounts
+        async function loadAccounts() {
+            if (!window.db) return;
+
+            try {
+                showLoading('Hesaplar yükleniyor...');
+                const accountsSnap = await getDocs(collection(window.db, 'accounts'));
+                const tbody = document.getElementById('accountsTable');
+                tbody.innerHTML = '';
+
+                if (accountsSnap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #718096;">Henüz hesap eklenmemiş</td></tr>';
+                    hideLoading();
+                    return;
+                }
+
+                const now = new Date();
+
+                accountsSnap.forEach((doc) => {
+                    const data = doc.data();
+                    const endDate = new Date(data.endDate);
+                    const isActive = endDate > now;
+
+                    const statusBadge = isActive ? 'success' : 'danger';
+                    const statusText = isActive ? 'Aktif' : 'Süresi Dolmuş';
+
+                    const paymentBadge = data.paymentStatus === 'paid' ? 'success' :
+                                       data.paymentStatus === 'pending' ? 'warning' : 'danger';
+                    const paymentText = data.paymentStatus === 'paid' ? 'Ödendi' :
+                                      data.paymentStatus === 'pending' ? 'Bekliyor' : 'Gecikmiş';
+
+                    const row = `
+                        <tr>
+                            <td><strong>${data.storeName}</strong></td>
+                            <td>${data.email}</td>
+                            <td>${new Date(data.startDate).toLocaleDateString('tr-TR')}</td>
+                            <td>${new Date(data.endDate).toLocaleDateString('tr-TR')}</td>
+                            <td><strong>${data.monthlyFee} ₺</strong></td>
+                            <td><span class="badge ${paymentBadge}">${paymentText}</span></td>
+                            <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                            <td>
+                                <button class="action-btn delete" onclick="deleteAccount('${doc.id}')">🗑️ Sil</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+                hideLoading();
+            } catch (error) {
+                console.error('Error loading accounts:', error);
+                hideLoading();
+                showAlert('accountsAlert', 'error', '❌ Hesaplar yüklenirken hata: ' + error.message);
+            }
+        }
+
+        // Add account
+        window.addAccount = async function() {
+            const storeName = document.getElementById('accountStoreName').value.trim();
+            const email = document.getElementById('accountEmail').value.trim();
+            const password = document.getElementById('accountPassword').value.trim();
+            const startDate = document.getElementById('accountStartDate').value;
+            const endDate = document.getElementById('accountEndDate').value;
+            const monthlyFee = parseInt(document.getElementById('accountMonthlyFee').value);
+            const paymentStatus = document.getElementById('accountPaymentStatus').value;
+
+            if (!storeName || !email || !password || !startDate || !endDate) {
+                alert('⚠️ Lütfen zorunlu alanları doldurun!');
+                return;
+            }
+
+            try {
+                showLoading('Hesap oluşturuluyor...');
+
+                const accountId = email.replace(/[@.]/g, '_');
+
+                await setDoc(doc(window.db, 'accounts', accountId), {
+                    storeName: storeName,
+                    email: email,
+                    password: password,
+                    startDate: startDate,
+                    endDate: endDate,
+                    monthlyFee: monthlyFee,
+                    paymentStatus: paymentStatus,
+                    createdAt: new Date().toISOString()
+                });
+
+                hideLoading();
+                showAlert('accountsAlert', 'success', '✅ Hesap başarıyla oluşturuldu!');
+                closeAddAccountModal();
+                loadAccounts();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error adding account:', error);
+                hideLoading();
+                alert('❌ Hesap oluşturulurken hata: ' + error.message);
+            }
+        };
+
+        // Delete account
+        window.deleteAccount = async function(accountId) {
+            if (!confirm('Bu hesabı silmek istediğinize emin misiniz?')) return;
+
+            try {
+                showLoading('Hesap siliniyor...');
+                await deleteDoc(doc(window.db, 'accounts', accountId));
+                hideLoading();
+                showAlert('accountsAlert', 'success', '✅ Hesap silindi!');
+                loadAccounts();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                hideLoading();
+                alert('❌ Silme hatası: ' + error.message);
+            }
+        };
+
+        // Modal functions
+        window.openAddProductModal = function() {
+            document.getElementById('addProductModal').classList.add('active');
+            // Reset form
+            document.getElementById('productBarcode').value = '';
+            document.getElementById('productName').value = '';
+            document.getElementById('productBrand').value = '';
+            document.getElementById('productCategory').value = '';
+            document.getElementById('productUnit').value = 'Adet';
+            document.getElementById('productShelfLife').value = '30';
+            document.getElementById('productDescription').value = '';
+            document.getElementById('productImage').value = '';
+            document.getElementById('imagePreview').classList.remove('active');
+            window.currentImageFile = null;
+        };
+
+        window.closeAddProductModal = function() {
+            document.getElementById('addProductModal').classList.remove('active');
+        };
+
+        window.openAddAccountModal = function() {
+            document.getElementById('addAccountModal').classList.add('active');
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            const nextYear = new Date();
+            nextYear.setFullYear(nextYear.getFullYear() + 1);
+            document.getElementById('accountStartDate').value = today;
+            document.getElementById('accountEndDate').value = nextYear.toISOString().split('T')[0];
+        };
+
+        window.closeAddAccountModal = function() {
+            document.getElementById('addAccountModal').classList.remove('active');
+        };
+
+        // Image preview
+        window.previewImage = function(input) {
+            const preview = document.getElementById('imagePreview');
+            if (input.files && input.files[0]) {
+                window.currentImageFile = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.add('active');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        // Save settings
+        window.saveSettings = function() {
+            const projectId = document.getElementById('settingsProjectId').value.trim();
+            const apiKey = document.getElementById('settingsApiKey').value.trim();
+
+            if (!projectId || !apiKey) {
+                showAlert('settingsAlert', 'error', '⚠️ Lütfen tüm alanları doldurun!');
+                return;
+            }
+
+            localStorage.setItem('firebase_project_id', projectId);
+            localStorage.setItem('firebase_api_key', apiKey);
+
+            showAlert('settingsAlert', 'success', '✅ Ayarlar kaydedildi! Sayfa yenileniyor...');
+
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        };
+
+        // Load settings
+        function loadSettings() {
+            const projectId = localStorage.getItem('firebase_project_id');
+            const apiKey = localStorage.getItem('firebase_api_key');
+
+            if (projectId) document.getElementById('settingsProjectId').value = projectId;
+            if (apiKey) document.getElementById('settingsApiKey').value = apiKey;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            initFirebase();
+        });
+    </script>
+</body>
+</html>

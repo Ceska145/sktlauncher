@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../providers/auth_provider.dart';
 import 'home_screen.dart';
@@ -29,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       final authProvider = context.read<AuthProvider>();
+      final theme = Theme.of(context);
       
       final success = await authProvider.login(
         email: _emailController.text.trim(),
@@ -46,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(authProvider.errorMessage ?? AppStrings.loginErrorMessage),
-              backgroundColor: AppColors.danger,
+              backgroundColor: theme.colorScheme.error,
               duration: const Duration(seconds: 3),
             ),
           );
@@ -57,8 +57,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -74,13 +76,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      color: theme.colorScheme.primary,
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.inventory_2,
                       size: 64,
-                      color: AppColors.textWhite,
+                      color: theme.colorScheme.onPrimary,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -99,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     AppStrings.loginSubtitle,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.textSecondary,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                     textAlign: TextAlign.center,
                   ),
@@ -184,13 +186,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: authProvider.isLoading ? null : _handleLogin,
                           child: authProvider.isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   height: 24,
                                   width: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.textWhite,
+                                      theme.colorScheme.onPrimary,
                                     ),
                                   ),
                                 )

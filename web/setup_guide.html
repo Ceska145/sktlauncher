@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel v2 - Hızlı Başlangıç Rehberi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .alert {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .alert.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 5px solid #f56565;
+        }
+
+        .alert.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 5px solid #48bb78;
+        }
+
+        .alert.info {
+            background: #bee3f8;
+            color: #1e4e8c;
+            border-left: 5px solid #4299e1;
+        }
+
+        .alert-icon {
+            font-size: 32px;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .step-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .step-content {
+            color: #4a5568;
+            line-height: 1.8;
+            margin-left: 55px;
+        }
+
+        .code-box {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 10px 10px 10px 0;
+        }
+
+        .button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .button.secondary {
+            background: #48bb78;
+        }
+
+        .button.secondary:hover {
+            background: #38a169;
+        }
+
+        .credentials {
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .credentials strong {
+            color: #2d3748;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .credentials code {
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .checklist {
+            list-style: none;
+            margin-left: 55px;
+        }
+
+        .checklist li {
+            padding: 10px 0;
+            padding-left: 35px;
+            position: relative;
+        }
+
+        .checklist li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 25px;
+            height: 25px;
+            background: #48bb78;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .footer {
+            background: #edf2f7;
+            padding: 30px;
+            text-align: center;
+            color: #718096;
+        }
+
+        .screenshot {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            display: block;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Admin Panel v2</h1>
+            <p>Hızlı Başlangıç Rehberi</p>
+        </div>
+
+        <div class="content">
+            <div class="alert error">
+                <div class="alert-icon">⚠️</div>
+                <div>
+                    <strong>ÖNEMLI!</strong> Admin Panel v2'yi kullanmadan önce Firebase Firestore Database oluşturmanız gerekiyor. Aşağıdaki adımları takip edin.
+                </div>
+            </div>
+
+            <!-- Step 1 -->
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">1</span>
+                    Firestore Database Oluştur
+                </div>
+                <div class="step-content">
+                    <p>Firebase Console'a giriş yapın ve Firestore Database oluşturun:</p>
+                    
+                    <a href="https://console.firebase.google.com/project/sktlauncer/firestore" target="_blank" class="button">
+                        🔗 Firebase Console'u Aç
+                    </a>
+
+                    <ul class="checklist">
+                        <li>Sol menüden <strong>"Build"</strong> → <strong>"Firestore Database"</strong></li>
+                        <li><strong>"Create database"</strong> butonuna tıklayın</li>
+                        <li><strong>Test Mode</strong> seçin (geliştirme için)</li>
+                        <li>Lokasyon: <strong>europe-west3 (Frankfurt)</strong> - Türkiye'ye en yakın</li>
+                        <li><strong>"Enable"</strong> butonuna basın</li>
+                    </ul>
+
+                    <div class="alert info">
+                        <div class="alert-icon">💡</div>
+                        <div>
+                            <strong>İpucu:</strong> Test Mode seçerseniz herkes okuyup yazabilir (30 gün). Production için güvenlik kurallarını daha sonra güncelleyebilirsiniz.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">2</span>
+                    Firebase Storage Aktifleştir (Fotoğraf Yükleme için)
+                </div>
+                <div class="step-content">
+                    <p>Ürün fotoğraflarını yükleyebilmek için Storage'ı aktifleştirin:</p>
+                    
+                    <ul class="checklist">
+                        <li>Sol menüden <strong>"Build"</strong> → <strong>"Storage"</strong></li>
+                        <li><strong>"Get started"</strong> butonuna tıklayın</li>
+                        <li><strong>Test Mode</strong> seçin</li>
+                        <li>Lokasyon: <strong>europe-west3 (Frankfurt)</strong></li>
+                        <li><strong>"Done"</strong> butonuna basın</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">3</span>
+                    Admin Panel'i Aç ve Ayarları Gir
+                </div>
+                <div class="step-content">
+                    <p>Admin Panel v2'yi açın ve Firebase bilgilerinizi girin:</p>
+                    
+                    <a href="https://8080-iw8w70pbb9up1vr4hqi4p-2b54fc91.sandbox.novita.ai/admin_panel_v2.html" target="_blank" class="button secondary">
+                        🚀 Admin Panel v2'yi Aç
+                    </a>
+
+                    <div class="credentials">
+                        <strong>Firebase Project ID:</strong>
+                        <code>sktlauncer</code>
+
+                        <strong style="margin-top: 15px;">Firebase API Key:</strong>
+                        <code>AIzaSyAlrVDFi-BiXnCSPzOrpAPxsfcBxLJwTo0</code>
+                    </div>
+
+                    <ul class="checklist">
+                        <li>Admin panelde <strong>"⚙️ Ayarlar"</strong> sekmesine gidin</li>
+                        <li>Yukarıdaki <strong>Project ID</strong> ve <strong>API Key</strong>'i yapıştırın</li>
+                        <li><strong>"💾 Ayarları Kaydet"</strong> butonuna basın</li>
+                        <li>Sayfa otomatik yenilenecek</li>
+                        <li>Header'da <strong>🟢 Firebase Bağlı</strong> görmelisiniz</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">4</span>
+                    Test Verilerini Yükle
+                </div>
+                <div class="step-content">
+                    <p>Örnek ürünler, talepler ve hesaplar oluşturmak için:</p>
+                    
+                    <div class="alert success">
+                        <div class="alert-icon">✅</div>
+                        <div>
+                            Test scripti otomatik olarak şunları oluşturacak:<br>
+                            • 5 örnek ürün (Sütas Süt, Pınar Peynir, vb.)<br>
+                            • 3 ürün talebi (2 bekleyen, 1 onaylanmış)<br>
+                            • 4 mağaza hesabı (farklı durumlarda)
+                        </div>
+                    </div>
+
+                    <p><strong>Script çalıştırması için:</strong></p>
+                    <div class="code-box">
+cd /home/user<br>
+python3 test_admin_panel.py
+                    </div>
+
+                    <p>Başarılı olursa şunu göreceksiniz:</p>
+                    <div class="code-box">
+✅ Firebase initialized successfully<br>
+✅ Successfully created 5 sample products<br>
+✅ Successfully created 3 sample requests<br>
+✅ Successfully created 4 sample accounts
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">5</span>
+                    Admin Panel Özelliklerini Test Et
+                </div>
+                <div class="step-content">
+                    <p>Admin panelde şu özellikleri test edin:</p>
+
+                    <ul class="checklist">
+                        <li><strong>📊 Dashboard:</strong> İstatistikleri görüntüle (5 ürün, 2 talep, 3 aktif hesap)</li>
+                        <li><strong>📦 Ürün Kataloğu:</strong> Yeni ürün ekle, fotoğraf yükle, düzenle, sil</li>
+                        <li><strong>📝 Ürün Talepleri:</strong> Bekleyen talepleri onayla/reddet</li>
+                        <li><strong>👥 Hesap Yönetimi:</strong> Yeni mağaza hesabı oluştur, durum takibi</li>
+                        <li><strong>📤 Toplu Yükleme:</strong> CSV ile toplu ürün ekle</li>
+                    </ul>
+
+                    <div class="alert info">
+                        <div class="alert-icon">💡</div>
+                        <div>
+                            <strong>İpucu:</strong> Ürün eklerken fotoğraf yüklemesi için progress bar göreceksiniz. Bu sayede işlemin hangi aşamada olduğunu takip edebilirsiniz.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert success">
+                <div class="alert-icon">🎉</div>
+                <div>
+                    <strong>Tebrikler!</strong> Admin Panel v2 kurulumu tamamlandı. Artık ürünlerinizi, taleplerinizi ve hesaplarınızı yönetebilirsiniz!
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="https://8080-iw8w70pbb9up1vr4hqi4p-2b54fc91.sandbox.novita.ai/admin_panel_v2.html" target="_blank" class="button secondary">
+                    🚀 Admin Panel'i Kullanmaya Başla
+                </a>
+                <a href="admin_panel_v2.html" class="button">
+                    📄 Detaylı Dokümantasyon
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Expiry Alert - Admin Panel v2</strong></p>
+            <p>Sorularınız için Firebase dokümantasyonuna göz atabilirsiniz</p>
+            <p style="margin-top: 10px; opacity: 0.7;">© 2025 Expiry Alert Development Team</p>
+        </div>
+    </div>
+</body>
+</html>

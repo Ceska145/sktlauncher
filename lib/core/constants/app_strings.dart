@@ -46,6 +46,81 @@ class AppStrings {
   static const String search = 'Ara';
   static const String logout = 'Çıkış Yap';
   
+  // Search
+  static const String searchHint = 'Ürün adı, marka veya barkod ara...';
+  static const String noSearchResults = 'Aramanızla eşleşen ürün bulunamadı';
+  static const String clearSearch = 'Aramayı Temizle';
+  
+  // Sorting
+  static const String sortBy = 'Sırala';
+  static const String sortByRisk = 'Risk Seviyesi';
+  static const String sortByName = 'Ürün Adı (A-Z)';
+  static const String sortByNameDesc = 'Ürün Adı (Z-A)';
+  static const String sortByExpiry = 'SKT (Yakın → Uzak)';
+  static const String sortByExpiryDesc = 'SKT (Uzak → Yakın)';
+  static const String sortByAdded = 'Eklenme Tarihi (Yeni → Eski)';
+  
+  // Add Product Screen
+  static const String addProductTitle = 'Yeni Ürün Ekle';
+  static const String addProductSubtitle = 'Ürün bilgilerini girerek sisteme ekleyin';
+  static const String editProductTitle = 'Ürünü Düzenle';
+  static const String productNameLabel = 'Ürün Adı *';
+  static const String productNameHintField = 'Örn: Süt 1L, Yoğurt 500g';
+  static const String productNameRequired = 'Ürün adı gereklidir';
+  static const String barcodeLabel = 'Barkod Numarası *';
+  static const String barcodeHint = 'Örn: 8690632000011';
+  static const String barcodeRequired = 'Barkod numarası gereklidir';
+  static const String barcodeTooShort = 'Barkod en az 6 karakter olmalıdır';
+  static const String brandLabel = 'Marka';
+  static const String brandHintField = 'Örn: Pınar, Danone, Eker';
+  static const String categoryLabel = 'Kategori';
+  static const String categoryHintField = 'Örn: Süt Ürünleri, Unlu Mamuller';
+  static const String expiryDateLabel = 'Son Kullanma Tarihi (SKT) *';
+  static const String expiryDateRequired = 'SKT tarihi gereklidir';
+  static const String expiryDateInPast = 'SKT tarihi geçmişte olamaz';
+  static const String shelfLifeLabel = 'Raftan Kalkma Süresi (Gün) *';
+  static const String shelfLifeHint = 'Örn: 3, 5, 7';
+  static const String shelfLifeRequired = 'Raftan kalkma süresi gereklidir';
+  static const String shelfLifeInvalid = 'Geçerli bir sayı girin';
+  static const String shelfLifeInfo = 'Ürünün raftan çekilmesi gereken SKT öncesi gün sayısı';
+  static const String quantityLabel = 'Miktar (Adet) *';
+  static const String quantityHint = 'Örn: 10, 24, 48';
+  static const String quantityRequired = 'Miktar gereklidir';
+  static const String quantityInvalid = 'Geçerli bir miktar girin';
+  static const String priceLabel = 'Birim Fiyat (₺)';
+  static const String priceHint = 'Örn: 25.50';
+  static const String priceInvalid = 'Geçerli bir fiyat girin';
+  static const String notesLabel = 'Notlar';
+  static const String notesHint = 'Opsiyonel not ekleyin...';
+  static const String productAdded = 'Ürün başarıyla eklendi!';
+  static const String productUpdated = 'Ürün başarıyla güncellendi!';
+  static const String addAnotherProduct = 'Başka Ürün Ekle';
+  static const String requiredFields = '* işaretli alanlar zorunludur';
+  static const String scanToFill = 'Barkod Tara';
+  static const String basicInfo = 'Temel Bilgiler';
+  static const String dateAndShelfInfo = 'Tarih ve Raf Bilgisi';
+  static const String stockAndPriceInfo = 'Stok ve Fiyat';
+  static const String additionalInfo = 'Ek Bilgiler';
+  static const String selectCategory = 'Kategori Seçin';
+  static const String customCategory = 'Özel Kategori';
+  
+  // Categories
+  static const String catDairy = 'Süt Ürünleri';
+  static const String catCheese = 'Peynir';
+  static const String catMeat = 'Et & Tavuk';
+  static const String catBakery = 'Unlu Mamuller';
+  static const String catBeverages = 'İçecekler';
+  static const String catSnacks = 'Atıştırmalık';
+  static const String catFrozen = 'Dondurulmuş';
+  static const String catPasta = 'Makarna & Pirinç';
+  static const String catLegumes = 'Bakliyat';
+  static const String catSauces = 'Sos & Baharat';
+  static const String catCanned = 'Konserve';
+  static const String catOil = 'Yağ';
+  static const String catCleaning = 'Temizlik';
+  static const String catPersonalCare = 'Kişisel Bakım';
+  static const String catOther = 'Diğer';
+  
   // Product Details
   static const String expiryDate = 'Son Kullanma Tarihi';
   static const String daysLeft = 'Kalan Gün';
@@ -77,6 +152,7 @@ class AppStrings {
   static const String noProducts = 'Henüz ürün eklenmemiş';
   static const String noProductsFiltered = 'Bu filtrede ürün bulunamadı';
   static const String refreshing = 'Yenileniyor...';
+  static const String addFirstProduct = 'İlk ürününüzü eklemek için + butonuna basın';
   
   // Barcode Scanner
   static const String scanBarcodeTitle = 'Barkod Tara';
@@ -130,8 +206,36 @@ class AppStrings {
   static const String adjustedExpiryDate = 'Düzeltilmiş SKT';
   static const String originalExpiryDate = 'Orijinal SKT';
   static const String calculationInfo = 'SKT Hesaplama';
-  static const String shelfLifeInfo = 'Raftan kalkma süresi';
   static const String criticalWarning = 'KRİTİK DURUM!';
   static const String expiredWarning = 'SÜRESİ GEÇMİŞ!';
   static const String takeAction = 'Hemen işlem yapın';
+  
+  // Scenario B - New Product Request
+  static const String newProductRequest = 'Yeni Ürün Talebi';
+  static const String newProductSubtitle = 'Sistemde olmayan ürün için talep oluştur';
+  static const String productPhoto = 'Ürün Fotoğrafı';
+  static const String takePhoto = 'Fotoğraf Çek';
+  static const String retakePhoto = 'Yeniden Çek';
+  static const String productName = 'Ürün Adı';
+  static const String productNameHint = 'Örn: Süt 1L';
+  static const String brandOptional = 'Marka (Opsiyonel)';
+  static const String brandHint = 'Örn: Pınar';
+  static const String categoryOptional = 'Kategori (Opsiyonel)';
+  static const String categoryHint = 'Örn: Süt Ürünleri';
+  static const String photoRequired = 'Ürün fotoğrafı gereklidir';
+  static const String submitRequest = 'Talebi Gönder';
+  static const String requestSubmitted = 'Talep gönderildi';
+  static const String requestSubmittedMessage = 'Yeni ürün talebiniz admin onayına gönderildi';
+  static const String adminWillReview = 'Admin onayından sonra ürün sisteme eklenecektir';
+  static const String backToHome = 'Ana Sayfaya Dön';
+  static const String cameraPermissionTitle = 'Kamera İzni Gerekli';
+  static const String cameraPermissionMessage = 'Fotoğraf çekmek için kamera izni vermelisiniz';
+  static const String requestInfo = 'Talep Bilgileri';
+  static const String photoPreview = 'Fotoğraf Önizleme';
+  static const String barcodeInfo = 'Barkod Bilgisi';
+  static const String detectedBarcode = 'Algılanan Barkod';
+  static const String requestStatus = 'Talep Durumu';
+  static const String pendingApproval = 'Onay Bekliyor';
+  static const String approved = 'Onaylandı';
+  static const String rejected = 'Reddedildi';
 }

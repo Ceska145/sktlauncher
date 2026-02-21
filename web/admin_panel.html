@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expiry Alert - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #48bb78;
+            --danger: #f56565;
+            --warning: #ed8936;
+            --info: #4299e1;
+            --dark: #2d3748;
+            --light: #f7fafc;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+        }
+
+        .admin-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .menu-item {
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: rgba(255,255,255,0.25);
+            font-weight: bold;
+        }
+
+        .menu-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: var(--dark);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-info h3 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .stat-icon {
+            font-size: 48px;
+            opacity: 0.2;
+        }
+
+        .stat-card.primary .stat-icon { color: var(--primary); }
+        .stat-card.success .stat-icon { color: var(--secondary); }
+        .stat-card.warning .stat-icon { color: var(--warning); }
+        .stat-card.danger .stat-icon { color: var(--danger); }
+
+        /* Content Section */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Image Upload */
+        .image-upload {
+            border: 3px dashed #cbd5e0;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-upload:hover {
+            border-color: var(--primary);
+            background: #f7fafc;
+        }
+
+        .image-upload.has-image {
+            border-style: solid;
+            border-color: var(--secondary);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #cbd5e0;
+            margin-bottom: 10px;
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            margin: 10px auto;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .data-table tr:hover {
+            background: #f7fafc;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge.expired {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .badge.pending {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .badge.paid {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 0 3px;
+        }
+
+        .action-btn.edit {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .action-btn.delete {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .action-btn.approve {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        /* Firebase Config */
+        .firebase-config {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Alert */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        .alert.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #38a169;
+        }
+
+        .alert.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .alert.warning {
+            background: #feebc8;
+            color: #7c2d12;
+            border-left: 4px solid #dd6b20;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <span class="logo-icon">🔥</span>
+            <span>Expiry Alert</span>
+        </div>
+        <div class="admin-badge">👨‍💼 Admin Panel</div>
+
+        <div class="menu-item active" data-section="dashboard">
+            <span class="menu-icon">📊</span>
+            Dashboard
+        </div>
+        <div class="menu-item" data-section="catalog">
+            <span class="menu-icon">📦</span>
+            Ürün Kataloğu
+        </div>
+        <div class="menu-item" data-section="requests">
+            <span class="menu-icon">📝</span>
+            Ürün Talepleri
+        </div>
+        <div class="menu-item" data-section="accounts">
+            <span class="menu-icon">👥</span>
+            Hesap Yönetimi
+        </div>
+        <div class="menu-item" data-section="upload">
+            <span class="menu-icon">☁️</span>
+            Toplu Yükleme
+        </div>
+        <div class="menu-item" data-section="settings">
+            <span class="menu-icon">⚙️</span>
+            Ayarlar
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1 id="pageTitle">Dashboard</h1>
+                <p style="color: #718096; margin-top: 5px;">Hoş geldiniz, Admin</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="showNotifications()">
+                    🔔 Bildirimler <span class="badge" style="background: var(--danger); color: white; margin-left: 5px;">3</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="content-section active">
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-info">
+                        <h3 id="totalProducts">0</h3>
+                        <p>Toplam Ürün</p>
+                    </div>
+                    <div class="stat-icon">📦</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-info">
+                        <h3 id="pendingRequests">0</h3>
+                        <p>Bekleyen Talepler</p>
+                    </div>
+                    <div class="stat-icon">📝</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-info">
+                        <h3 id="activeAccounts">0</h3>
+                        <p>Aktif Hesaplar</p>
+                    </div>
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-info">
+                        <h3 id="expiredAccounts">0</h3>
+                        <p>Süresi Dolan</p>
+                    </div>
+                    <div class="stat-icon">⚠️</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Son Aktiviteler</h3>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>İşlem</th>
+                            <th>Kullanıcı</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityLog">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #718096;">Aktivite yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Catalog Section -->
+        <div id="catalog" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Ürün Kataloğu Yönetimi</h3>
+                    <button class="btn btn-primary" onclick="openAddProductModal()">
+                        ➕ Yeni Ürün Ekle
+                    </button>
+                </div>
+
+                <div class="alert" id="catalogAlert"></div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fotoğraf</th>
+                            <th>Barkod</th>
+                            <th>Ürün Adı</th>
+                            <th>Marka</th>
+                            <th>Kategori</th>
+                            <th>Raf Ömrü</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="catalogTable">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #718096;">Ürünler yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Requests Section -->
+        <div id="requests" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Kullanıcı Ürün Talepleri</h3>
+                    <span class="badge pending" id="requestBadge">0 Bekleyen</span>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Mağaza</th>
+                            <th>Barkod</th>
+                            <th>Ürün Adı</th>
+                            <th>Marka</th>
+                            <th>Kategori</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsTable">
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: #718096;">Talepler yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Accounts Section -->
+        <div id="accounts" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Mağaza Hesapları</h3>
+                    <button class="btn btn-success" onclick="openAddAccountModal()">
+                        ➕ Yeni Hesap Ekle
+                    </button>
+                </div>
+
+                <div class="alert" id="accountAlert"></div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Mağaza Adı</th>
+                            <th>Email</th>
+                            <th>Başlangıç</th>
+                            <th>Bitiş</th>
+                            <th>Ödeme</th>
+                            <th>Aylık Ücret</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accountsTable">
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: #718096;">Hesaplar yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div id="upload" class="content-section">
+            <!-- Firebase Upload Tool burada olacak -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🔥 Firebase Toplu Ürün Yükleme</h3>
+                </div>
+                <iframe src="product_uploader.html" style="width: 100%; height: 800px; border: none; border-radius: 10px;"></iframe>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Firebase Yapılandırması</h3>
+                </div>
+
+                <div class="firebase-config">
+                    <h4 style="margin-bottom: 15px;">⚙️ Firebase Bağlantı Ayarları</h4>
+                    <input type="text" class="config-input" id="configProjectId" placeholder="Project ID">
+                    <input type="text" class="config-input" id="configApiKey" placeholder="API Key">
+                    <button class="btn btn-primary" onclick="saveFirebaseConfig()" style="margin-top: 10px;">
+                        💾 Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Yeni Ürün Ekle</h3>
+                <span class="modal-close" onclick="closeAddProductModal()">✖</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ürün Fotoğrafı</label>
+                <div class="image-upload" id="productImageUpload" onclick="document.getElementById('productImageInput').click()">
+                    <input type="file" id="productImageInput" accept="image/*" style="display: none;" onchange="previewProductImage(event)">
+                    <div id="uploadPlaceholder">
+                        <div class="upload-icon">📷</div>
+                        <p>Fotoğraf yüklemek için tıklayın</p>
+                    </div>
+                    <img id="productImagePreview" class="image-preview" style="display: none;">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Barkod *</label>
+                    <input type="text" class="form-input" id="productBarcode" placeholder="8690123456789" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ürün Adı *</label>
+                    <input type="text" class="form-input" id="productName" placeholder="Sütas Süt 1L" required>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Marka *</label>
+                    <input type="text" class="form-input" id="productBrand" placeholder="Sütas" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Kategori *</label>
+                    <select class="form-select" id="productCategory" required>
+                        <option value="">Kategori seçin</option>
+                        <option value="Süt Ürünleri">Süt Ürünleri</option>
+                        <option value="Peynir">Peynir</option>
+                        <option value="Et Ürünleri">Et Ürünleri</option>
+                        <option value="Şarküteri">Şarküteri</option>
+                        <option value="Ekmek & Unlu">Ekmek & Unlu</option>
+                        <option value="İçecekler">İçecekler</option>
+                        <option value="Atıştırmalık">Atıştırmalık</option>
+                        <option value="Dondurulmuş">Dondurulmuş</option>
+                        <option value="Makarna">Makarna</option>
+                        <option value="Bakliyat">Bakliyat</option>
+                        <option value="Sos & Baharat">Sos & Baharat</option>
+                        <option value="Konserve">Konserve</option>
+                        <option value="Yağ">Yağ</option>
+                        <option value="Temizlik">Temizlik</option>
+                        <option value="Kişisel Bakım">Kişisel Bakım</option>
+                        <option value="Diğer">Diğer</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Birim</label>
+                    <input type="text" class="form-input" id="productUnit" placeholder="1L, 500g, vb.">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Varsayılan Raf Ömrü (Gün) *</label>
+                    <input type="number" class="form-input" id="productShelfLife" value="7" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Açıklama</label>
+                <textarea class="form-textarea" id="productDescription" placeholder="Ürün açıklaması..."></textarea>
+            </div>
+
+            <div class="loading" id="addProductLoading">
+                <div class="spinner"></div>
+                <p>Ürün ekleniyor...</p>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeAddProductModal()" style="background: #e2e8f0; color: #2d3748;">İptal</button>
+                <button class="btn btn-primary" onclick="addProduct()">💾 Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div id="addAccountModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Yeni Hesap Ekle</h3>
+                <span class="modal-close" onclick="closeAddAccountModal()">✖</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Mağaza Adı *</label>
+                <input type="text" class="form-input" id="accountStoreName" placeholder="Örn: ABC Market" required>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" id="accountEmail" placeholder="ornek@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Şifre *</label>
+                    <input type="password" class="form-input" id="accountPassword" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Başlangıç Tarihi *</label>
+                    <input type="date" class="form-input" id="accountStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bitiş Tarihi *</label>
+                    <input type="date" class="form-input" id="accountEndDate" required>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Aylık Ücret (₺) *</label>
+                    <input type="number" class="form-input" id="accountMonthlyFee" placeholder="299" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ödeme Durumu *</label>
+                    <select class="form-select" id="accountPaymentStatus" required>
+                        <option value="paid">Ödendi</option>
+                        <option value="pending">Beklemede</option>
+                        <option value="unpaid">Ödenmedi</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notlar</label>
+                <textarea class="form-textarea" id="accountNotes" placeholder="Hesap ile ilgili notlar..."></textarea>
+            </div>
+
+            <div class="loading" id="addAccountLoading">
+                <div class="spinner"></div>
+                <p>Hesap oluşturuluyor...</p>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeAddAccountModal()" style="background: #e2e8f0; color: #2d3748;">İptal</button>
+                <button class="btn btn-success" onclick="addAccount()">✅ Hesap Oluştur</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+
+        // Global variables
+        window.firebaseApp = null;
+        window.db = null;
+        window.storage = null;
+        window.currentImageFile = null;
+
+        // Initialize Firebase
+        function initFirebase() {
+            const projectId = localStorage.getItem('firebase_project_id') || '';
+            const apiKey = localStorage.getItem('firebase_api_key') || '';
+
+            if (!projectId || !apiKey) {
+                console.log('Firebase config not found');
+                return false;
+            }
+
+            try {
+                const firebaseConfig = {
+                    apiKey: apiKey,
+                    authDomain: `${projectId}.firebaseapp.com`,
+                    projectId: projectId,
+                    storageBucket: `${projectId}.appspot.com`,
+                };
+
+                window.firebaseApp = initializeApp(firebaseConfig);
+                window.db = getFirestore(window.firebaseApp);
+                window.storage = getStorage(window.firebaseApp);
+                
+                console.log('✅ Firebase initialized');
+                loadDashboardData();
+                return true;
+            } catch (error) {
+                console.error('❌ Firebase init error:', error);
+                return false;
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load products count
+                const productsSnap = await getDocs(collection(window.db, 'product_catalog'));
+                document.getElementById('totalProducts').textContent = productsSnap.size;
+
+                // Load requests (placeholder)
+                document.getElementById('pendingRequests').textContent = '0';
+
+                // Load accounts (placeholder)
+                document.getElementById('activeAccounts').textContent = '0';
+                document.getElementById('expiredAccounts').textContent = '0';
+
+                // Load catalog
+                loadCatalog();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Load catalog
+        async function loadCatalog() {
+            if (!window.db) return;
+
+            try {
+                const catalogSnap = await getDocs(collection(window.db, 'product_catalog'));
+                const tbody = document.getElementById('catalogTable');
+                tbody.innerHTML = '';
+
+                if (catalogSnap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #718096;">Henüz ürün eklenmemiş</td></tr>';
+                    return;
+                }
+
+                catalogSnap.forEach((doc) => {
+                    const data = doc.data();
+                    const row = `
+                        <tr>
+                            <td><img src="${data.imageUrl || 'https://via.placeholder.com/50'}" style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover;"></td>
+                            <td>${doc.id}</td>
+                            <td><strong>${data.name}</strong></td>
+                            <td>${data.brand}</td>
+                            <td><span class="badge" style="background: #e6fffa; color: #234e52;">${data.category}</span></td>
+                            <td>${data.defaultShelfLifeDays} gün</td>
+                            <td>
+                                <button class="action-btn edit" onclick="editProduct('${doc.id}')">✏️ Düzenle</button>
+                                <button class="action-btn delete" onclick="deleteProduct('${doc.id}')">🗑️ Sil</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading catalog:', error);
+            }
+        }
+
+        // Add product
+        window.addProduct = async function() {
+            const barcode = document.getElementById('productBarcode').value.trim();
+            const name = document.getElementById('productName').value.trim();
+            const brand = document.getElementById('productBrand').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const unit = document.getElementById('productUnit').value.trim();
+            const shelfLife = parseInt(document.getElementById('productShelfLife').value);
+            const description = document.getElementById('productDescription').value.trim();
+
+            if (!barcode || !name || !brand || !category) {
+                alert('⚠️ Lütfen zorunlu alanları doldurun!');
+                return;
+            }
+
+            document.getElementById('addProductLoading').classList.add('active');
+
+            try {
+                let imageUrl = '';
+
+                // Upload image if exists
+                if (window.currentImageFile) {
+                    const storageRef = ref(window.storage, `products/${barcode}_${Date.now()}.jpg`);
+                    await uploadBytes(storageRef, window.currentImageFile);
+                    imageUrl = await getDownloadURL(storageRef);
+                }
+
+                // Add to Firestore
+                await setDoc(doc(window.db, 'product_catalog', barcode), {
+                    name: name,
+                    brand: brand,
+                    category: category,
+                    imageUrl: imageUrl,
+                    description: description,
+                    unit: unit,
+                    defaultShelfLifeDays: shelfLife,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                });
+
+                showAlert('catalogAlert', 'success', '✅ Ürün başarıyla eklendi!');
+                closeAddProductModal();
+                loadCatalog();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error adding product:', error);
+                alert('❌ Ürün eklenirken hata oluştu: ' + error.message);
+            } finally {
+                document.getElementById('addProductLoading').classList.remove('active');
+            }
+        };
+
+        // Delete product
+        window.deleteProduct = async function(barcode) {
+            if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) return;
+
+            try {
+                await deleteDoc(doc(window.db, 'product_catalog', barcode));
+                showAlert('catalogAlert', 'success', '✅ Ürün silindi!');
+                loadCatalog();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                alert('❌ Ürün silinirken hata oluştu: ' + error.message);
+            }
+        };
+
+        // Show alert
+        function showAlert(elementId, type, message) {
+            const alert = document.getElementById(elementId);
+            alert.className = `alert ${type} active`;
+            alert.textContent = message;
+            setTimeout(() => {
+                alert.classList.remove('active');
+            }, 5000);
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load saved config
+            const savedProjectId = localStorage.getItem('firebase_project_id');
+            const savedApiKey = localStorage.getItem('firebase_api_key');
+            
+            if (savedProjectId && savedApiKey) {
+                document.getElementById('configProjectId').value = savedProjectId;
+                document.getElementById('configApiKey').value = savedApiKey;
+                initFirebase();
+            }
+
+            // Set default dates for account form
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('accountStartDate').value = today;
+            
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            document.getElementById('accountEndDate').value = nextMonth.toISOString().split('T')[0];
+        });
+
+        // Export functions
+        window.initFirebase = initFirebase;
+        window.loadCatalog = loadCatalog;
+    </script>
+
+    <script>
+        // Menu navigation
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all items
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+
+                // Hide all sections
+                document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+
+                // Show selected section
+                const section = this.dataset.section;
+                document.getElementById(section).style.display = 'block';
+
+                // Update page title
+                const titles = {
+                    'dashboard': 'Dashboard',
+                    'catalog': 'Ürün Kataloğu',
+                    'requests': 'Ürün Talepleri',
+                    'accounts': 'Hesap Yönetimi',
+                    'upload': 'Toplu Yükleme',
+                    'settings': 'Ayarlar'
+                };
+                document.getElementById('pageTitle').textContent = titles[section];
+            });
+        });
+
+        // Modal functions
+        function openAddProductModal() {
+            document.getElementById('addProductModal').classList.add('active');
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('addProductModal').classList.remove('active');
+            // Reset form
+            document.getElementById('productBarcode').value = '';
+            document.getElementById('productName').value = '';
+            document.getElementById('productBrand').value = '';
+            document.getElementById('productCategory').value = '';
+            document.getElementById('productUnit').value = '';
+            document.getElementById('productShelfLife').value = '7';
+            document.getElementById('productDescription').value = '';
+            document.getElementById('productImagePreview').style.display = 'none';
+            document.getElementById('uploadPlaceholder').style.display = 'block';
+            document.getElementById('productImageUpload').classList.remove('has-image');
+            window.currentImageFile = null;
+        }
+
+        function openAddAccountModal() {
+            document.getElementById('addAccountModal').classList.add('active');
+        }
+
+        function closeAddAccountModal() {
+            document.getElementById('addAccountModal').classList.remove('active');
+        }
+
+        // Image preview
+        function previewProductImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                window.currentImageFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('productImagePreview').src = e.target.result;
+                    document.getElementById('productImagePreview').style.display = 'block';
+                    document.getElementById('uploadPlaceholder').style.display = 'none';
+                    document.getElementById('productImageUpload').classList.add('has-image');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Save Firebase config
+        function saveFirebaseConfig() {
+            const projectId = document.getElementById('configProjectId').value.trim();
+            const apiKey = document.getElementById('configApiKey').value.trim();
+
+            if (!projectId || !apiKey) {
+                alert('⚠️ Lütfen tüm alanları doldurun!');
+                return;
+            }
+
+            localStorage.setItem('firebase_project_id', projectId);
+            localStorage.setItem('firebase_api_key', apiKey);
+
+            alert('✅ Firebase yapılandırması kaydedildi!');
+            initFirebase();
+        }
+
+        // Add account (placeholder)
+        function addAccount() {
+            const storeName = document.getElementById('accountStoreName').value.trim();
+            const email = document.getElementById('accountEmail').value.trim();
+            const password = document.getElementById('accountPassword').value;
+            const startDate = document.getElementById('accountStartDate').value;
+            const endDate = document.getElementById('accountEndDate').value;
+            const monthlyFee = document.getElementById('accountMonthlyFee').value;
+            const paymentStatus = document.getElementById('accountPaymentStatus').value;
+            const notes = document.getElementById('accountNotes').value.trim();
+
+            if (!storeName || !email || !password || !startDate || !endDate || !monthlyFee) {
+                alert('⚠️ Lütfen zorunlu alanları doldurun!');
+                return;
+            }
+
+            document.getElementById('addAccountLoading').classList.add('active');
+
+            // Simulate account creation
+            setTimeout(() => {
+                document.getElementById('addAccountLoading').classList.remove('active');
+                alert('✅ Hesap başarıyla oluşturuldu!\n\nMağaza: ' + storeName + '\nEmail: ' + email + '\nBaşlangıç: ' + startDate + '\nBitiş: ' + endDate + '\nAylık Ücret: ' + monthlyFee + ' ₺\nÖdeme: ' + paymentStatus);
+                closeAddAccountModal();
+                
+                // Add to table (placeholder)
+                const tbody = document.getElementById('accountsTable');
+                if (tbody.querySelector('td[colspan]')) {
+                    tbody.innerHTML = '';
+                }
+                
+                const statusBadge = paymentStatus === 'paid' ? 
+                    '<span class="badge paid">Ödendi</span>' : 
+                    '<span class="badge pending">Beklemede</span>';
+                
+                const isActive = new Date(endDate) > new Date();
+                const accountStatus = isActive ? 
+                    '<span class="badge active">Aktif</span>' : 
+                    '<span class="badge expired">Süresi Dolmuş</span>';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${storeName}</strong></td>
+                        <td>${email}</td>
+                        <td>${new Date(startDate).toLocaleDateString('tr-TR')}</td>
+                        <td>${new Date(endDate).toLocaleDateString('tr-TR')}</td>
+                        <td>${statusBadge}</td>
+                        <td><strong>${monthlyFee} ₺</strong></td>
+                        <td>${accountStatus}</td>
+                        <td>
+                            <button class="action-btn edit">✏️ Düzenle</button>
+                            <button class="action-btn delete">🚫 Sonlandır</button>
+                        </td>
+                    </tr>
+                `;
+                
+                // Update stats
+                document.getElementById('activeAccounts').textContent = parseInt(document.getElementById('activeAccounts').textContent) + 1;
+            }, 2000);
+        }
+
+        // Show notifications (placeholder)
+        function showNotifications() {
+            alert('🔔 Bildirimler:\n\n• 3 yeni ürün talebi\n• 1 hesap yakında sona erecek\n• 5 ürün stokta tükenmek üzere');
+        }
+    </script>
+</body>
+</html>

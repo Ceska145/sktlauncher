@@ -6,13 +6,12 @@ class Product {
   final String? brand;
   final String? category;
   final String? imageUrl;
-  final DateTime expiryDate;
+  final DateTime? expiryDate; // Nullable - stok sıfırlandığında null olacak
   final DateTime addedDate;
   final int shelfLifeDays; // Raftan kalkma süresi (gün)
-  final int quantity;
-  final double? price;
   final String? notes;
   final String storeId;
+  final bool isStockOut; // Stok sıfırlandı mı?
 
   Product({
     required this.id,
@@ -21,26 +20,30 @@ class Product {
     this.brand,
     this.category,
     this.imageUrl,
-    required this.expiryDate,
+    this.expiryDate,
     required this.addedDate,
     required this.shelfLifeDays,
-    required this.quantity,
-    this.price,
     this.notes,
     required this.storeId,
+    this.isStockOut = false,
   });
 
   /// SKT risk hesaplama: (SKT - Raftan Kalkma Süresi) <= Bugün
   /// Kalan gün sayısını döner
-  int get daysUntilExpiry {
+  int? get daysUntilExpiry {
+    if (expiryDate == null || isStockOut) return null;
     final today = DateTime.now();
-    final adjustedExpiryDate = expiryDate.subtract(Duration(days: shelfLifeDays));
+    final adjustedExpiryDate = expiryDate!.subtract(Duration(days: shelfLifeDays));
     return adjustedExpiryDate.difference(today).inDays;
   }
 
   /// Risk seviyesi
-  RiskLevel get riskLevel {
+  RiskLevel? get riskLevel {
+    if (isStockOut || expiryDate == null) return null; // Stok sıfırlandıysa risk yok
+    
     final days = daysUntilExpiry;
+    if (days == null) return null;
+    
     if (days < 0) {
       return RiskLevel.expired; // Süresi geçmiş
     } else if (days <= 3) {
@@ -62,12 +65,12 @@ class Product {
     String? category,
     String? imageUrl,
     DateTime? expiryDate,
+    bool clearExpiryDate = false,
     DateTime? addedDate,
     int? shelfLifeDays,
-    int? quantity,
-    double? price,
     String? notes,
     String? storeId,
+    bool? isStockOut,
   }) {
     return Product(
       id: id ?? this.id,
@@ -76,13 +79,12 @@ class Product {
       brand: brand ?? this.brand,
       category: category ?? this.category,
       imageUrl: imageUrl ?? this.imageUrl,
-      expiryDate: expiryDate ?? this.expiryDate,
+      expiryDate: clearExpiryDate ? null : (expiryDate ?? this.expiryDate),
       addedDate: addedDate ?? this.addedDate,
       shelfLifeDays: shelfLifeDays ?? this.shelfLifeDays,
-      quantity: quantity ?? this.quantity,
-      price: price ?? this.price,
       notes: notes ?? this.notes,
       storeId: storeId ?? this.storeId,
+      isStockOut: isStockOut ?? this.isStockOut,
     );
   }
 }

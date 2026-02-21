@@ -5,6 +5,11 @@ import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../domain/entities/product.dart';
 import '../providers/product_provider.dart';
+import '../providers/batch_provider.dart';
+import 'add_product_screen.dart';
+import 'update_expiry_screen.dart';
+import 'batch_management_tab.dart';
+import 'product_history_tab.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -15,19 +20,33 @@ class ProductDetailScreen extends StatefulWidget {
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }
 
-class _ProductDetailScreenState extends State<ProductDetailScreen> {
+class _ProductDetailScreenState extends State<ProductDetailScreen> with SingleTickerProviderStateMixin {
   late Product _product;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _product = widget.product;
+    _tabController = TabController(length: 3, vsync: this);
+    
+    // Load batches
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BatchProvider>().loadBatches(_product.id);
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Color _getRiskColor() {
-    switch (_product.riskLevel) {
+    if (_product.isStockOut || _product.riskLevel == null) return AppColors.info;
+    
+    switch (_product.riskLevel!) {
       case RiskLevel.expired:
-        return AppColors.danger;
       case RiskLevel.critical:
         return AppColors.danger;
       case RiskLevel.high:
@@ -40,7 +59,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   String _getRiskText() {
-    switch (_product.riskLevel) {
+    if (_product.isStockOut) return 'Stok Sıfırlandı';
+    if (_product.riskLevel == null) return 'Bilinmiyor';
+    
+    switch (_product.riskLevel!) {
       case RiskLevel.expired:
         return AppStrings.expiredWarning;
       case RiskLevel.critical:
@@ -55,7 +77,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   IconData _getRiskIcon() {
-    switch (_product.riskLevel) {
+    if (_product.isStockOut) return Icons.inventory_2;
+    if (_product.riskLevel == null) return Icons.help_outline;
+    
+    switch (_product.riskLevel!) {
       case RiskLevel.expired:
         return Icons.dangerous;
       case RiskLevel.critical:
@@ -70,59 +95,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _selectExpiryDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _product.expiryDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
-      locale: const Locale('tr', 'TR'),
-      helpText: AppStrings.selectNewExpiryDate,
-      cancelText: AppStrings.cancel,
-      confirmText: AppStrings.save,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: AppColors.textWhite,
-              surface: AppColors.background,
-            ),
-          ),
-          child: child!,
-        );
-      },
+    // Yeni SKT Güncelleme ekranına git
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UpdateExpiryScreen(product: _product),
+      ),
     );
 
-    if (picked != null && picked != _product.expiryDate) {
-      await _updateExpiryDate(picked);
-    }
-  }
-
-  Future<void> _updateExpiryDate(DateTime newDate) async {
-    final updatedProduct = _product.copyWith(expiryDate: newDate);
-    
-    final productProvider = context.read<ProductProvider>();
-    final success = await productProvider.updateProduct(updatedProduct);
-
-    if (mounted) {
-      if (success) {
-        setState(() {
-          _product = updatedProduct;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(AppStrings.dateUpdated),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(productProvider.errorMessage ?? 'Güncelleme başarısız'),
-            backgroundColor: AppColors.danger,
-          ),
-        );
-      }
+    // Eğer güncelleme başarılı olduysa, ürünü yeniden yükle
+    if (result == true && mounted) {
+      final productProvider = context.read<ProductProvider>();
+      final storeId = _product.storeId;
+      await productProvider.loadProducts(storeId);
+      
+      // Güncellenmiş ürünü bul
+      final updatedProduct = productProvider.products
+          .firstWhere((p) => p.id == _product.id, orElse: () => _product);
+      
+      setState(() {
+        _product = updatedProduct;
+      });
     }
   }
 
@@ -150,8 +143,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
 
     if (confirmed == true && mounted) {
-      // Stoku 0'a çek
-      final updatedProduct = _product.copyWith(quantity: 0);
+      // Stoku sıfırla - SKT'yi sil ve isStockOut'u true yap
+      final updatedProduct = _product.copyWith(
+        clearExpiryDate: true,
+        isStockOut: true,
+      );
       final productProvider = context.read<ProductProvider>();
       final success = await productProvider.updateProduct(updatedProduct);
 
@@ -163,7 +159,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(AppStrings.stockMarkedAsZero),
-              backgroundColor: AppColors.warning,
+              backgroundColor: AppColors.success,
             ),
           );
           // Ana ekrana dön
@@ -198,10 +194,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     _product.name,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 4),
-                  Text('Miktar: ${_product.quantity} adet'),
-                  if (_product.price != null)
-                    Text('Toplam: ${(_product.price! * _product.quantity).toStringAsFixed(2)} ₺'),
                 ],
               ),
             ),
@@ -292,14 +284,38 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd.MM.yyyy');
     final riskColor = _getRiskColor();
-    final adjustedExpiryDate = _product.expiryDate.subtract(
-      Duration(days: _product.shelfLifeDays),
-    );
+    final adjustedExpiryDate = _product.expiryDate?.subtract(
+            Duration(days: _product.shelfLifeDays),
+          );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.productDetails),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(icon: Icon(Icons.info_outline), text: 'Bilgiler'),
+            Tab(icon: Icon(Icons.inventory), text: 'Partiler'),
+            Tab(icon: Icon(Icons.history), text: 'Geçmiş'),
+          ],
+        ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddProductScreen(editProduct: _product),
+                ),
+              );
+              if (result != null && mounted) {
+                // Reload product data
+                setState(() {});
+              }
+            },
+            tooltip: AppStrings.editProduct,
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: _deleteProduct,
@@ -307,13 +323,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Risk Banner
-            if (_product.riskLevel == RiskLevel.expired ||
-                _product.riskLevel == RiskLevel.critical)
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Tab 1: Product Info
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+            // Risk Banner (sadece stok sıfırlanmamışsa ve kritik durumdaysa göster)
+            if (!_product.isStockOut && 
+                (_product.riskLevel == RiskLevel.expired ||
+                _product.riskLevel == RiskLevel.critical))
               Container(
                 padding: const EdgeInsets.all(16),
                 color: riskColor,
@@ -421,98 +442,114 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Risk Status Card
-                  _buildInfoCard(
-                    title: AppStrings.riskStatus,
-                    color: riskColor,
-                    children: [
-                      Row(
+                  // Stok Sıfırlandı Bildirimi
+                  if (_product.isStockOut)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.info),
+                      ),
+                      child: Row(
                         children: [
-                          Icon(_getRiskIcon(), color: riskColor, size: 32),
+                          const Icon(Icons.inventory_2, color: AppColors.info, size: 32),
                           const SizedBox(width: 12),
-                          Expanded(
+                          const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _getRiskText(),
+                                  'Stok Sıfırlandı',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: riskColor,
+                                    color: AppColors.info,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                 Text(
-                                  '${_product.daysUntilExpiry.abs()} ${AppStrings.day} ${_product.daysUntilExpiry < 0 ? "geçti" : "kaldı"}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textSecondary,
-                                  ),
+                                  'Bu ürünün stoğu sıfırlanmıştır',
+                                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
                                 ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
+                    ),
+                  if (_product.isStockOut)
+                    const SizedBox(height: 16),
 
-                  // Expiry Info Card
-                  _buildInfoCard(
-                    title: AppStrings.expiryInfo,
-                    color: AppColors.info,
-                    children: [
-                      _buildInfoRow(
-                        AppStrings.originalExpiryDate,
-                        dateFormat.format(_product.expiryDate),
-                        Icons.calendar_today,
-                      ),
-                      const Divider(height: 24),
-                      _buildInfoRow(
-                        AppStrings.shelfLifeInfo,
-                        '${_product.shelfLifeDays} gün önce',
-                        Icons.access_time,
-                      ),
-                      const Divider(height: 24),
-                      _buildInfoRow(
-                        AppStrings.adjustedExpiryDate,
-                        dateFormat.format(adjustedExpiryDate),
-                        Icons.event_available,
-                        valueColor: riskColor,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Stock Info Card
-                  _buildInfoCard(
-                    title: AppStrings.stockInfo,
-                    color: AppColors.success,
-                    children: [
-                      _buildInfoRow(
-                        AppStrings.quantity,
-                        '${_product.quantity} ${AppStrings.piece}',
-                        Icons.inventory,
-                      ),
-                      if (_product.price != null) ...[
-                        const Divider(height: 24),
-                        _buildInfoRow(
-                          AppStrings.price,
-                          '${_product.price!.toStringAsFixed(2)} ₺',
-                          Icons.attach_money,
-                        ),
-                        const Divider(height: 24),
-                        _buildInfoRow(
-                          'Toplam Değer',
-                          '${(_product.price! * _product.quantity).toStringAsFixed(2)} ₺',
-                          Icons.account_balance_wallet,
-                          valueColor: AppColors.success,
+                  // Risk Status Card (sadece stok sıfırlanmamışsa göster)
+                  if (!_product.isStockOut)
+                    _buildInfoCard(
+                      title: AppStrings.riskStatus,
+                      color: riskColor,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(_getRiskIcon(), color: riskColor, size: 32),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _getRiskText(),
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: riskColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${_product.daysUntilExpiry?.abs() ?? 0} ${AppStrings.day} ${(_product.daysUntilExpiry ?? 0) < 0 ? "geçti" : "kaldı"}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ],
-                  ),
+                    ),
+                  if (!_product.isStockOut)
+                    const SizedBox(height: 16),
+
+                  // Expiry Info Card (sadece stok sıfırlanmamışsa göster)
+                  if (!_product.isStockOut && _product.expiryDate != null)
+                    _buildInfoCard(
+                      title: AppStrings.expiryInfo,
+                      color: AppColors.info,
+                      children: [
+                        _buildInfoRow(
+                          AppStrings.originalExpiryDate,
+                          dateFormat.format(_product.expiryDate!),
+                          Icons.calendar_today,
+                        ),
+                        const Divider(height: 24),
+                        _buildInfoRow(
+                          AppStrings.shelfLifeInfo,
+                          '${_product.shelfLifeDays} gün önce',
+                          Icons.access_time,
+                        ),
+                        const Divider(height: 24),
+                        if (adjustedExpiryDate != null)
+                          _buildInfoRow(
+                            AppStrings.adjustedExpiryDate,
+                            dateFormat.format(adjustedExpiryDate),
+                            Icons.event_available,
+                            valueColor: riskColor,
+                          ),
+                      ],
+                    ),
+                  if (!_product.isStockOut && _product.expiryDate != null)
                   const SizedBox(height: 16),
 
                   // Product Details Card
@@ -584,7 +621,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
           ],
-        ),
+            ),
+          ),
+          
+          // Tab 2: Batch Management
+          BatchManagementTab(product: _product),
+          
+          // Tab 3: Product History
+          ProductHistoryTab(product: _product),
+        ],
       ),
     );
   }

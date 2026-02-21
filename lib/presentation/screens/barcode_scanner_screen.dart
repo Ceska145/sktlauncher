@@ -5,9 +5,15 @@ import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../providers/product_provider.dart';
 import 'product_detail_screen.dart';
+// import 'new_product_request_screen.dart'; // Temporarily disabled
 
 class BarcodeScannerScreen extends StatefulWidget {
-  const BarcodeScannerScreen({super.key});
+  final bool returnBarcodeOnly;
+
+  const BarcodeScannerScreen({
+    super.key,
+    this.returnBarcodeOnly = false,
+  });
 
   @override
   State<BarcodeScannerScreen> createState() => _BarcodeScannerScreenState();
@@ -43,6 +49,12 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
       _isProcessing = true;
       _lastScannedBarcode = barcodeValue;
     });
+
+    // Eğer sadece barkod return etmek için kullanılıyorsa
+    if (widget.returnBarcodeOnly) {
+      Navigator.pop(context, barcodeValue);
+      return;
+    }
 
     // Haptic feedback (titreşim)
     // HapticFeedback.mediumImpact(); // Web'de çalışmayabilir
@@ -270,11 +282,9 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
           ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Scenario B ekranına git
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Scenario B (Yeni ürün ekleme) yakında eklenecek'),
-                  backgroundColor: AppColors.info,
+                  content: Text('Yeni ürün ekleme özelliği şu anda kullanılamıyor'),
                 ),
               );
             },

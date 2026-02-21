@@ -9,13 +9,12 @@ class ProductModel extends Product {
     super.brand,
     super.category,
     super.imageUrl,
-    required super.expiryDate,
+    super.expiryDate,
     required super.addedDate,
     required super.shelfLifeDays,
-    required super.quantity,
-    super.price,
     super.notes,
     required super.storeId,
+    super.isStockOut,
   });
 
   /// JSON'dan model oluştur (Backend API response için)
@@ -27,13 +26,14 @@ class ProductModel extends Product {
       brand: json['brand'] as String?,
       category: json['category'] as String?,
       imageUrl: json['image_url'] as String?,
-      expiryDate: DateTime.parse(json['expiry_date'] as String),
+      expiryDate: json['expiry_date'] != null 
+          ? DateTime.parse(json['expiry_date'] as String)
+          : null,
       addedDate: DateTime.parse(json['added_date'] as String),
       shelfLifeDays: json['shelf_life_days'] as int,
-      quantity: json['quantity'] as int,
-      price: json['price'] != null ? (json['price'] as num).toDouble() : null,
       notes: json['notes'] as String?,
       storeId: json['store_id'] as String,
+      isStockOut: json['is_stock_out'] as bool? ?? false,
     );
   }
 
@@ -46,13 +46,12 @@ class ProductModel extends Product {
       'brand': brand,
       'category': category,
       'image_url': imageUrl,
-      'expiry_date': expiryDate.toIso8601String(),
+      'expiry_date': expiryDate?.toIso8601String(),
       'added_date': addedDate.toIso8601String(),
       'shelf_life_days': shelfLifeDays,
-      'quantity': quantity,
-      'price': price,
       'notes': notes,
       'store_id': storeId,
+      'is_stock_out': isStockOut,
     };
   }
 
@@ -65,13 +64,12 @@ class ProductModel extends Product {
       'brand': brand,
       'category': category,
       'image_url': imageUrl,
-      'expiry_date': expiryDate.millisecondsSinceEpoch,
+      'expiry_date': expiryDate?.millisecondsSinceEpoch,
       'added_date': addedDate.millisecondsSinceEpoch,
       'shelf_life_days': shelfLifeDays,
-      'quantity': quantity,
-      'price': price,
       'notes': notes,
       'store_id': storeId,
+      'is_stock_out': isStockOut,
     };
   }
 
@@ -84,13 +82,14 @@ class ProductModel extends Product {
       brand: json['brand'] as String?,
       category: json['category'] as String?,
       imageUrl: json['image_url'] as String?,
-      expiryDate: DateTime.fromMillisecondsSinceEpoch(json['expiry_date'] as int),
+      expiryDate: json['expiry_date'] != null 
+          ? DateTime.fromMillisecondsSinceEpoch(json['expiry_date'] as int)
+          : null,
       addedDate: DateTime.fromMillisecondsSinceEpoch(json['added_date'] as int),
       shelfLifeDays: json['shelf_life_days'] as int,
-      quantity: json['quantity'] as int,
-      price: json['price'] != null ? (json['price'] as num).toDouble() : null,
       notes: json['notes'] as String?,
       storeId: json['store_id'] as String,
+      isStockOut: json['is_stock_out'] as bool? ?? false,
     );
   }
 
@@ -106,10 +105,9 @@ class ProductModel extends Product {
       expiryDate: expiryDate,
       addedDate: addedDate,
       shelfLifeDays: shelfLifeDays,
-      quantity: quantity,
-      price: price,
       notes: notes,
       storeId: storeId,
+      isStockOut: isStockOut,
     );
   }
 }

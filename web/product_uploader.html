@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Ürün Yükleme Aracı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-section {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            background: #eef1ff;
+            border-color: #764ba2;
+        }
+
+        .upload-section.dragover {
+            background: #e3e7ff;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #28a745;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .progress-container {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .log-container {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .log-item {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .log-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .log-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .log-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .firebase-config {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .firebase-config h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .preview-table th {
+            background: #667eea;
+            color: white;
+        }
+
+        .preview-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firebase Ürün Yükleme Aracı</h1>
+        <p class="subtitle">Excel/CSV dosyanızı Firebase Firestore'a yükleyin</p>
+
+        <!-- Firebase Config -->
+        <div class="firebase-config">
+            <h3>⚙️ Firebase Yapılandırması</h3>
+            <input type="text" class="config-input" id="projectId" placeholder="Firebase Project ID (örn: expiry-alert-123)">
+            <input type="text" class="config-input" id="apiKey" placeholder="Firebase API Key">
+            <p style="font-size: 12px; color: #856404; margin-top: 10px;">
+                ℹ️ Firebase Console → Project Settings → General'den alabilirsiniz
+            </p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats" style="display: none;" id="statsContainer">
+            <div class="stat-card">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Toplam Ürün</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="successCount">0</div>
+                <div class="stat-label">Başarılı</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="errorCount">0</div>
+                <div class="stat-label">Hata</div>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section" id="uploadSection">
+            <div class="upload-icon">📁</div>
+            <h3>CSV/Excel Dosyasını Sürükle & Bırak</h3>
+            <p style="color: #666; margin: 10px 0;">veya</p>
+            <label for="fileInput" class="btn">Dosya Seç</label>
+            <input type="file" id="fileInput" accept=".csv,.xlsx">
+            <p style="margin-top: 15px; font-size: 12px; color: #999;">
+                Desteklenen formatlar: CSV, Excel (.xlsx)
+            </p>
+        </div>
+
+        <!-- Preview Table -->
+        <div style="overflow-x: auto;">
+            <table class="preview-table" id="previewTable">
+                <thead>
+                    <tr>
+                        <th>Barkod</th>
+                        <th>Ürün Adı</th>
+                        <th>Marka</th>
+                        <th>Kategori</th>
+                        <th>Raf Ömrü</th>
+                    </tr>
+                </thead>
+                <tbody id="previewBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="text-align: center;">
+            <button class="btn" id="downloadTemplateBtn">📥 Şablon İndir</button>
+            <button class="btn" id="uploadBtn" disabled>🚀 Firebase'e Yükle</button>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+        </div>
+
+        <!-- Log -->
+        <div class="log-container" id="logContainer"></div>
+    </div>
+
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, doc, setDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        let parsedData = [];
+        let firebaseApp = null;
+        let db = null;
+
+        // Elements
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const logContainer = document.getElementById('logContainer');
+        const previewTable = document.getElementById('previewTable');
+        const previewBody = document.getElementById('previewBody');
+        const statsContainer = document.getElementById('statsContainer');
+        const projectIdInput = document.getElementById('projectId');
+        const apiKeyInput = document.getElementById('apiKey');
+
+        // Drag & Drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            handleFile(file);
+        });
+
+        // File Input
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFile(file);
+        });
+
+        // Handle File
+        function handleFile(file) {
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                parseCSV(text);
+            };
+            reader.readAsText(file);
+        }
+
+        // Parse CSV
+        function parseCSV(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const headers = lines[0].split(',').map(h => h.trim());
+
+            parsedData = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length < headers.length) continue;
+
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index];
+                });
+                parsedData.push(row);
+            }
+
+            displayPreview();
+            uploadBtn.disabled = false;
+            addLog(`✅ ${parsedData.length} ürün başarıyla okundu!`, 'success');
+        }
+
+        // Display Preview
+        function displayPreview() {
+            previewBody.innerHTML = '';
+            parsedData.slice(0, 5).forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.barcode}</td>
+                    <td>${product.name}</td>
+                    <td>${product.brand}</td>
+                    <td>${product.category}</td>
+                    <td>${product.defaultShelfLifeDays || 'N/A'} gün</td>
+                `;
+                previewBody.appendChild(row);
+            });
+            previewTable.style.display = 'table';
+
+            if (parsedData.length > 5) {
+                const moreRow = document.createElement('tr');
+                moreRow.innerHTML = `<td colspan="5" style="text-align: center; color: #999; font-style: italic;">... ve ${parsedData.length - 5} ürün daha</td>`;
+                previewBody.appendChild(moreRow);
+            }
+        }
+
+        // Upload to Firebase
+        uploadBtn.addEventListener('click', async () => {
+            const projectId = projectIdInput.value.trim();
+            const apiKey = apiKeyInput.value.trim();
+
+            if (!projectId || !apiKey) {
+                alert('⚠️ Lütfen Firebase yapılandırmasını tamamlayın!');
+                return;
+            }
+
+            // Initialize Firebase
+            try {
+                const firebaseConfig = {
+                    apiKey: apiKey,
+                    authDomain: `${projectId}.firebaseapp.com`,
+                    projectId: projectId,
+                    storageBucket: `${projectId}.appspot.com`,
+                };
+
+                firebaseApp = initializeApp(firebaseConfig);
+                db = getFirestore(firebaseApp);
+            } catch (error) {
+                addLog(`❌ Firebase bağlantı hatası: ${error.message}`, 'error');
+                return;
+            }
+
+            uploadBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            logContainer.style.display = 'block';
+            statsContainer.style.display = 'grid';
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (let i = 0; i < parsedData.length; i++) {
+                const product = parsedData[i];
+                const progress = Math.round(((i + 1) / parsedData.length) * 100);
+                progressFill.style.width = `${progress}%`;
+                progressFill.textContent = `${progress}%`;
+
+                try {
+                    await setDoc(doc(db, 'product_catalog', product.barcode), {
+                        name: product.name,
+                        brand: product.brand,
+                        category: product.category,
+                        imageUrl: product.imageUrl || '',
+                        description: product.description || '',
+                        unit: product.unit || '',
+                        defaultShelfLifeDays: parseInt(product.defaultShelfLifeDays) || 7,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    });
+
+                    successCount++;
+                    addLog(`✅ ${product.name} (${product.barcode})`, 'success');
+                } catch (error) {
+                    errorCount++;
+                    addLog(`❌ ${product.name}: ${error.message}`, 'error');
+                }
+
+                // Update stats
+                document.getElementById('totalCount').textContent = parsedData.length;
+                document.getElementById('successCount').textContent = successCount;
+                document.getElementById('errorCount').textContent = errorCount;
+            }
+
+            addLog(`\n🎉 Yükleme tamamlandı! ${successCount} başarılı, ${errorCount} hata`, 'info');
+            uploadBtn.disabled = false;
+        });
+
+        // Download Template
+        downloadTemplateBtn.addEventListener('click', () => {
+            const template = `barcode,name,brand,category,imageUrl,description,unit,defaultShelfLifeDays
+8690504001234,Sütas Süt 1L,Sütas,Süt Ürünleri,https://via.placeholder.com/200,Tam yağlı süt,1L,7
+8690504005678,Pınar Peynir 500g,Pınar,Peynir,https://via.placeholder.com/200,Beyaz peynir,500g,30
+8690123456789,Ülker Çikolata,Ülker,Atıştırmalık,https://via.placeholder.com/200,Sütlü çikolata,80g,180`;
+
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'product_catalog_template.csv';
+            a.click();
+        });
+
+        // Add Log
+        function addLog(message, type = 'info') {
+            const logItem = document.createElement('div');
+            logItem.className = `log-item log-${type}`;
+            logItem.textContent = message;
+            logContainer.appendChild(logItem);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

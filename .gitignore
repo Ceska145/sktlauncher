@@ -1,26 +1,142 @@
-# Flutter/Dart
-# Build outputs (exclude to save space)
-/build/
-/.dart_tool/
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
 .packages
 .pub-cache/
 .pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Android related
+*.jks
+*.keystore
+android/.gradle/
+android/app/build/
+android/build/
+android/gradle/
+android/local.properties
+android/.gradle/
+android/key.properties
+android/release-key.jks
+
+# iOS related
+ios/Flutter/flutter_export_environment.sh
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Web related
+web/flutter_service_worker.js
+
+# Firebase
+firebase-debug.log
+firestore-debug.log
+firestore.rules.backup
+
+# Backup files
+*.bak
+*.backup
+
+# APK builds
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Coverage
+coverage/
+.nyc_output
 
 # IDE
 .vscode/
 .idea/
-*.iml
-
-# OS Files
-.DS_Store
-Thumbs.db
+*.sublime-project
+*.sublime-workspace
 
 # Logs
+logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Temporary files
-*.tmp
-*.temp
+# Environment
+.env
+.env.local
+.env.*.local
 
-# Keep lib/ directory for source code!
+# Test
+test_coverage/
+coverage/
 
+# Firebase Admin SDK (sensitive)
+*-firebase-adminsdk-*.json
+google-services.json.secret

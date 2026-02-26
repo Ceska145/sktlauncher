@@ -25,20 +25,25 @@ import 'presentation/screens/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Hive'ı initialize et
-  await Hive.initFlutter();
-  
-  // SharedPreferences'i initialize et
-  final sharedPreferences = await SharedPreferences.getInstance();
-  
-  // ThemeProvider'ı initialize et
-  final themeProvider = ThemeProvider();
-  await themeProvider.loadPreferences();
-  
-  runApp(MyApp(
-    sharedPreferences: sharedPreferences,
-    themeProvider: themeProvider,
-  ));
+  try {
+    // Hive'ı initialize et
+    await Hive.initFlutter();
+    
+    // SharedPreferences'i initialize et
+    final sharedPreferences = await SharedPreferences.getInstance();
+    
+    // ThemeProvider'ı initialize et
+    final themeProvider = ThemeProvider();
+    await themeProvider.loadPreferences();
+    
+    runApp(MyApp(
+      sharedPreferences: sharedPreferences,
+      themeProvider: themeProvider,
+    ));
+  } catch (e) {
+    // Eğer başlatma hatası olursa basit bir error ekranı göster
+    runApp(ErrorApp(errorMessage: 'Başlatma hatası: $e'));
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -116,6 +121,58 @@ class MyApp extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+// Error fallback app
+class ErrorApp extends StatelessWidget {
+  final String errorMessage;
+  
+  const ErrorApp({super.key, required this.errorMessage});
+  
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 80, color: Colors.red),
+                const SizedBox(height: 20),
+                const Text(
+                  'Uygulama Başlatma Hatası',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  errorMessage,
+                  style: const TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  onPressed: () {
+                    // Uygulamayı yeniden başlatmayı dene
+                    runApp(const MaterialApp(
+                      home: Scaffold(
+                        body: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    ));
+                  },
+                  child: const Text('Yeniden Dene'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

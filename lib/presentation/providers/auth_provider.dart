@@ -23,9 +23,18 @@ class AuthProvider with ChangeNotifier {
 
   /// Login durumunu kontrol et
   Future<void> _checkLoginStatus() async {
-    _isLoggedIn = await authRepository.isLoggedIn();
-    if (_isLoggedIn) {
-      _currentUser = await authRepository.getCurrentUser();
+    try {
+      // Timeout ekle - maksimum 2 saniye bekle
+      _isLoggedIn = await authRepository.isLoggedIn()
+          .timeout(const Duration(seconds: 2));
+      if (_isLoggedIn) {
+        _currentUser = await authRepository.getCurrentUser()
+            .timeout(const Duration(seconds: 2));
+      }
+    } catch (e) {
+      // Timeout veya hata durumunda offline mod
+      _isLoggedIn = false;
+      _currentUser = null;
     }
     notifyListeners();
   }

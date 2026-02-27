@@ -21,18 +21,19 @@ class AuthProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isLoggedIn => _isLoggedIn;
 
-  /// Login durumunu kontrol et
+  /// Login durumunu kontrol et - OFFLINE FIRST
   Future<void> _checkLoginStatus() async {
     try {
-      // Timeout ekle - maksimum 2 saniye bekle
-      _isLoggedIn = await authRepository.isLoggedIn()
-          .timeout(const Duration(seconds: 2));
+      // Sadece local cache kontrol et (backend'e sorma)
+      _isLoggedIn = await authRepository.isLoggedIn();
       if (_isLoggedIn) {
-        _currentUser = await authRepository.getCurrentUser()
-            .timeout(const Duration(seconds: 2));
+        _currentUser = await authRepository.getCurrentUser();
       }
     } catch (e) {
-      // Timeout veya hata durumunda offline mod
+      // Hata durumunda offline mod
+      if (kDebugMode) {
+        print('Login status check error: $e');
+      }
       _isLoggedIn = false;
       _currentUser = null;
     }
